@@ -1,0 +1,704 @@
+/* ==========================================
+   TEXICON EXECUTIVE DASHBOARD - DARK THEME
+   Brand: Texicon Agri (#4CAF50 green)
+   Style: SMIFP-inspired dark mode
+   ========================================== */
+
+/* --- Global Resets --- */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+
+.main .block-container {
+    max-width: 1600px;
+    padding: 1rem 2.5rem 2rem 2.5rem;
+}
+
+/* Force dark background everywhere */
+.stApp, .main, [data-testid="stAppViewContainer"] {
+    background-color: #111B14 !important;
+}
+
+/* --- Hide Sidebar Globally --- */
+section[data-testid="stSidebar"] {
+    display: none !important;
+}
+
+/* --- Sidebar (legacy) --- */
+section[data-testid="stSidebar"].legacy {
+    background-color: #0D160F !important;
+    border-right: 1px solid #1E3323;
+}
+
+section[data-testid="stSidebar"] .stMarkdown p,
+section[data-testid="stSidebar"] label {
+    color: #B0BEC5 !important;
+}
+
+/* --- Top Data Bar --- */
+.top-bar {
+    background: #1A2B1E;
+    border-bottom: 1px solid #2E4A34;
+    padding: 0.5rem 1.2rem;
+    border-radius: 8px;
+    margin-bottom: 1.2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.82rem;
+    color: #9E9E9E;
+}
+
+/* --- Page Title --- */
+.page-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #E0E0E0;
+    margin-bottom: 0.15rem;
+}
+
+.page-subtitle {
+    font-size: 0.88rem;
+    color: #78909C;
+    margin-bottom: 1.2rem;
+}
+
+/* --- Period Filter Buttons --- */
+.period-buttons {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1.2rem;
+    flex-wrap: wrap;
+}
+
+.period-btn {
+    padding: 0.35rem 0.9rem;
+    border-radius: 16px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border: 1px solid #2E4A34;
+    background: transparent;
+    color: #B0BEC5;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.period-btn.active {
+    background: #4CAF50;
+    color: #FFFFFF;
+    border-color: #4CAF50;
+}
+
+/* --- KPI Cards --- */
+.kpi-card {
+    background: #1A2B1E;
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    border: 1px solid #2E4A34;
+    min-height: 100px;
+    transition: border-color 0.2s;
+}
+
+.kpi-card:hover {
+    border-color: #4CAF50;
+}
+
+.kpi-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #78909C;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 0.4rem;
+}
+
+.kpi-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #4CAF50;
+    line-height: 1.2;
+    margin-bottom: 0.25rem;
+}
+
+.kpi-value.warning { color: #FFA726; }
+.kpi-value.danger { color: #EF5350; }
+.kpi-value.neutral { color: #E0E0E0; }
+
+.kpi-delta {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.kpi-delta.positive { color: #4CAF50; }
+.kpi-delta.negative { color: #EF5350; }
+.kpi-delta.muted { color: #78909C; }
+
+/* --- Summary Mini-Cards (row below KPIs) --- */
+.mini-card {
+    background: #1A2B1E;
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    border: 1px solid #2E4A34;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.mini-card .mini-label {
+    font-size: 0.72rem;
+    color: #78909C;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.mini-card .mini-value {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #E0E0E0;
+}
+
+/* --- Comparison Cards (current -> previous) --- */
+.compare-card {
+    background: #1A2B1E;
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    border: 1px solid #2E4A34;
+}
+
+.compare-card .compare-label {
+    font-size: 0.68rem;
+    color: #78909C;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.2rem;
+}
+
+.compare-card .compare-main {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #E0E0E0;
+}
+
+.compare-card .compare-arrow {
+    color: #546E7A;
+    font-size: 0.8rem;
+    margin: 0 0.3rem;
+}
+
+.compare-card .compare-prev {
+    font-size: 0.82rem;
+    color: #78909C;
+}
+
+.compare-card .compare-delta {
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin-left: 0.4rem;
+}
+
+.compare-delta.up { color: #4CAF50; }
+.compare-delta.down { color: #EF5350; }
+
+/* --- Section Cards (grouped content) --- */
+.section-card {
+    background: #1A2B1E;
+    border-radius: 12px;
+    border: 1px solid #2E4A34;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.section-card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #E0E0E0;
+    margin-bottom: 0.2rem;
+}
+
+.section-card-subtitle {
+    font-size: 0.78rem;
+    color: #78909C;
+    margin-bottom: 1rem;
+}
+
+/* --- Section Header (collapsible) --- */
+.section-header {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #E0E0E0;
+    padding: 0.8rem 0 0.5rem 0;
+    margin-top: 0.8rem;
+    border-bottom: 1px solid #2E4A34;
+    margin-bottom: 0.8rem;
+}
+
+/* --- Alert / Risk Banners --- */
+.alert-banner {
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    border: 1px solid;
+}
+
+.alert-red {
+    background: rgba(239, 83, 80, 0.08);
+    border-color: rgba(239, 83, 80, 0.3);
+    color: #EF5350;
+}
+
+.alert-amber {
+    background: rgba(255, 167, 38, 0.08);
+    border-color: rgba(255, 167, 38, 0.3);
+    color: #FFA726;
+}
+
+.alert-blue {
+    background: rgba(66, 165, 245, 0.08);
+    border-color: rgba(66, 165, 245, 0.3);
+    color: #42A5F5;
+}
+
+.alert-green {
+    background: rgba(76, 175, 80, 0.08);
+    border-color: rgba(76, 175, 80, 0.3);
+    color: #4CAF50;
+}
+
+/* --- Risk Alert Card --- */
+.risk-card {
+    background: #1A2B1E;
+    border-radius: 8px;
+    border-left: 3px solid #EF5350;
+    padding: 0.8rem 1.2rem;
+    margin-bottom: 0.6rem;
+}
+
+.risk-card .risk-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #EF5350;
+    margin-bottom: 0.2rem;
+}
+
+.risk-card .risk-desc {
+    font-size: 0.78rem;
+    color: #78909C;
+}
+
+.risk-card.warning {
+    border-left-color: #FFA726;
+}
+
+.risk-card.warning .risk-title {
+    color: #FFA726;
+}
+
+/* --- Insight Card (inline) --- */
+.insight-card {
+    border-radius: 6px;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+    border: 1px solid;
+}
+
+.insight-warning {
+    background: rgba(255, 167, 38, 0.06);
+    border-color: rgba(255, 167, 38, 0.2);
+    color: #FFA726;
+}
+
+.insight-danger {
+    background: rgba(239, 83, 80, 0.06);
+    border-color: rgba(239, 83, 80, 0.2);
+    color: #EF5350;
+}
+
+.insight-info {
+    background: rgba(76, 175, 80, 0.06);
+    border-color: rgba(76, 175, 80, 0.2);
+    color: #81C784;
+}
+
+/* --- Styled Table (Top 10, etc.) --- */
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+
+.styled-table th {
+    text-align: left;
+    padding: 0.5rem 0.6rem;
+    color: #78909C;
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #2E4A34;
+}
+
+.styled-table td {
+    padding: 0.5rem 0.6rem;
+    color: #E0E0E0;
+    border-bottom: 1px solid rgba(46, 74, 52, 0.3);
+}
+
+.styled-table tr:hover td {
+    background: rgba(76, 175, 80, 0.04);
+}
+
+.styled-table .val-green {
+    color: #4CAF50;
+    font-weight: 600;
+}
+
+.styled-table .val-muted {
+    color: #78909C;
+}
+
+/* --- Concentration Bar --- */
+.conc-bar {
+    display: flex;
+    border-radius: 6px;
+    overflow: hidden;
+    height: 28px;
+    margin-bottom: 0.5rem;
+}
+
+.conc-bar .seg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    padding: 0 0.5rem;
+}
+
+/* --- Badge --- */
+.badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+.badge-red {
+    background: rgba(239, 83, 80, 0.15);
+    color: #EF5350;
+}
+
+.badge-green {
+    background: rgba(76, 175, 80, 0.15);
+    color: #4CAF50;
+}
+
+.badge-amber {
+    background: rgba(255, 167, 38, 0.15);
+    color: #FFA726;
+}
+
+/* --- Sidebar Brand --- */
+.sidebar-brand {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #4CAF50;
+    padding: 0.3rem 0;
+}
+
+.sidebar-subtitle {
+    font-size: 0.78rem;
+    color: #78909C;
+    margin-bottom: 1rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid #2E4A34;
+}
+
+/* --- Streamlit Overrides --- */
+.stExpander {
+    border: 1px solid #2E4A34 !important;
+    border-radius: 10px !important;
+    background: #1A2B1E !important;
+}
+
+.stExpander [data-testid="stExpanderToggleIcon"] {
+    color: #4CAF50 !important;
+}
+
+div[data-testid="stExpander"] details summary span {
+    color: #E0E0E0 !important;
+    font-weight: 600 !important;
+}
+
+.stSelectbox label, .stMultiSelect label, .stDateInput label {
+    color: #B0BEC5 !important;
+}
+
+/* Tab buttons override */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 0.3rem;
+    background: transparent;
+}
+
+.stTabs [data-baseweb="tab"] {
+    background: transparent;
+    border: 1px solid #2E4A34;
+    border-radius: 16px;
+    padding: 0.3rem 0.8rem;
+    color: #B0BEC5;
+    font-size: 0.78rem;
+}
+
+.stTabs [aria-selected="true"] {
+    background: #4CAF50 !important;
+    color: #FFFFFF !important;
+    border-color: #4CAF50 !important;
+}
+
+.stTabs [data-baseweb="tab-highlight"] {
+    display: none;
+}
+
+.stTabs [data-baseweb="tab-border"] {
+    display: none;
+}
+
+/* Metric override */
+[data-testid="stMetric"] {
+    background: #1A2B1E;
+    border: 1px solid #2E4A34;
+    border-radius: 8px;
+    padding: 0.8rem;
+}
+
+[data-testid="stMetricValue"] {
+    color: #4CAF50 !important;
+}
+
+/* Plotly chart background */
+.stPlotlyChart {
+    border-radius: 8px;
+}
+
+/* Dataframe dark */
+[data-testid="stDataFrame"] {
+    border-radius: 8px;
+}
+
+/* --- Period Button Row (Streamlit buttons) --- */
+div[data-testid="stHorizontalBlock"] > div > div > button[kind="primary"] {
+    background-color: #4CAF50 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 20px !important;
+    font-weight: 600 !important;
+}
+
+div[data-testid="stHorizontalBlock"] > div > div > button[kind="secondary"] {
+    background-color: transparent !important;
+    color: #B0BEC5 !important;
+    border: 1px solid #2E4A34 !important;
+    border-radius: 20px !important;
+}
+
+div[data-testid="stHorizontalBlock"] > div > div > button[kind="secondary"]:hover {
+    border-color: #4CAF50 !important;
+    color: #4CAF50 !important;
+}
+
+/* --- Multiselect Pills (dark theme) --- */
+span[data-baseweb="tag"] {
+    background-color: #2E4A34 !important;
+    color: #E0E0E0 !important;
+    border-radius: 12px !important;
+}
+
+/* --- Reconnection: Priority Bar --- */
+.priority-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(46, 74, 52, 0.3);
+    overflow: hidden;
+    margin-top: 4px;
+    min-width: 60px;
+}
+
+.priority-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+}
+
+/* --- Reconnection: Segment-colored KPI cards --- */
+.kpi-card.segment-falling-out { border-left: 3px solid #EF5350; }
+.kpi-card.segment-at-risk { border-left: 3px solid #FFA726; }
+.kpi-card.segment-high-potential { border-left: 3px solid #4CAF50; }
+
+/* ==========================================
+   SMIFP PRESENTATION POLISH
+   Typography, Shadows, Icons, Risk Alerts
+   ========================================== */
+
+/* --- Serif Typography (executive/financial feel) --- */
+.kpi-value {
+    font-family: Georgia, 'Times New Roman', serif !important;
+}
+
+.page-title {
+    font-family: Georgia, 'Times New Roman', serif !important;
+}
+
+.section-header {
+    font-family: Georgia, 'Times New Roman', serif !important;
+}
+
+.section-card-title {
+    font-family: Georgia, 'Times New Roman', serif !important;
+}
+
+.compare-main {
+    font-family: Georgia, 'Times New Roman', serif !important;
+}
+
+/* --- Box Shadows (visual depth) --- */
+.kpi-card {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+}
+
+.mini-card {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+}
+
+.compare-card {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+}
+
+.section-card {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+}
+
+.risk-card {
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+.stExpander {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* --- Bordered Container Styling (st.container(border=True)) --- */
+[data-testid="stVerticalBlockBorderWrapper"] {
+    background: #1A2B1E !important;
+    border: 1px solid #2E4A34 !important;
+    border-radius: 12px !important;
+    padding: 0.5rem !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+}
+
+/* --- KPI Card Icon Box --- */
+.kpi-icon-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(76, 175, 80, 0.12);
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: #4CAF50;
+}
+
+.kpi-icon-box.warning {
+    background: rgba(255, 167, 38, 0.12);
+    color: #FFA726;
+}
+
+.kpi-icon-box.danger {
+    background: rgba(239, 83, 80, 0.12);
+    color: #EF5350;
+}
+
+.kpi-icon-box.neutral {
+    background: rgba(176, 190, 197, 0.12);
+    color: #B0BEC5;
+}
+
+/* --- Mini Card Icon Box --- */
+.mini-icon-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(76, 175, 80, 0.12);
+    font-size: 0.85rem;
+    color: #4CAF50;
+    flex-shrink: 0;
+}
+
+/* --- Risk Alert Header with Badge --- */
+.risk-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: Georgia, 'Times New Roman', serif;
+    color: #E0E0E0;
+    padding: 0.8rem 0 0.5rem 0;
+    margin-top: 0.8rem;
+    border-bottom: 1px solid #2E4A34;
+    margin-bottom: 0.8rem;
+}
+
+.risk-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 11px;
+    background: rgba(239, 83, 80, 0.2);
+    color: #EF5350;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0 0.4rem;
+    font-family: Inter, system-ui, sans-serif;
+}
+
+.risk-count-badge.clear {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+}
+
+/* --- All Clear Box --- */
+.all-clear-box {
+    background: rgba(76, 175, 80, 0.08);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    text-align: center;
+    color: #4CAF50;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.all-clear-box .all-clear-sub {
+    font-size: 0.75rem;
+    color: #78909C;
+    font-weight: 400;
+    margin-top: 0.3rem;
+}
+
+/* --- Section Gap (consistent 24px spacing) --- */
+.section-gap {
+    margin-top: 1.5rem;
+}
