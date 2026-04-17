@@ -448,7 +448,9 @@ with wh_col2:
             del_monthly["Month"] = del_monthly["DEL_MONTH"].dt.strftime("%b %y")
             fig = line_bar_combo(del_monthly, "Month", "Value", "Count",
                                  "Delivered Value", "Deliveries", height=260,
-                                 y_title="Delivered Value (PHP)")
+                                 y_title="Delivered Value (PHP)",
+                                 line_on_secondary=True, line_currency=False,
+                                 line_y_title="Deliveries (count)")
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
 # ============================================

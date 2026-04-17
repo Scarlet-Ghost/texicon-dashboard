@@ -127,23 +127,42 @@ def donut_chart(labels, values, colors=None, height=300, center_text=None, label
 
 
 def line_bar_combo(df, x, bar_y, line_y, bar_name="", line_name="", height=320,
-                   x_title=None, y_title=None, y_currency=True):
+                   x_title=None, y_title=None, y_currency=True,
+                   line_on_secondary=False, line_y_title=None, line_currency=True):
+    """Bar + line combo chart. Defaults assume bar and line share the same
+    unit (e.g. PHP vs PHP). Opt into `line_on_secondary=True` with
+    `line_currency=False` when the line is a count or other non-currency
+    series that would otherwise get squashed against a currency bar's scale."""
     fig = go.Figure()
+    bar_tpl = ("<b>%{x}</b><br>" + bar_name + ": "
+               + (PHP_SYMBOL if y_currency else "") + "%{y:,.0f}<extra></extra>")
+    line_tpl = ("<b>%{x}</b><br>" + line_name + ": "
+                + (PHP_SYMBOL if line_currency else "") + "%{y:,.0f}<extra></extra>")
+
     fig.add_trace(go.Bar(
         x=df[x], y=df[bar_y], name=bar_name,
         marker=dict(color=CHART_COLORS[0], cornerradius=6),
         opacity=0.85,
-        hovertemplate="<b>%{x}</b><br>" + bar_name + ": " + PHP_SYMBOL + "%{y:,.0f}<extra></extra>",
+        hovertemplate=bar_tpl,
     ))
     fig.add_trace(go.Scatter(
         x=df[x], y=df[line_y], name=line_name,
         mode="lines+markers",
         line=dict(color=CHART_COLORS[2], width=2.5, shape="spline"),
         marker=dict(size=7, color=CHART_COLORS[2], line=dict(width=2, color=BG_CARD)),
-        hovertemplate="<b>%{x}</b><br>" + line_name + ": " + PHP_SYMBOL + "%{y:,.0f}<extra></extra>",
+        hovertemplate=line_tpl,
+        yaxis="y2" if line_on_secondary else "y",
     ))
     fig.update_layout(**_layout(height=height, barmode="overlay"))
     _apply_axes(fig, x_title=x_title, y_title=y_title, y_currency=y_currency)
+    if line_on_secondary:
+        fig.update_layout(yaxis2=dict(
+            title=dict(text=line_y_title or line_name, font=dict(color=CHART_COLORS[2])),
+            overlaying="y", side="right", showgrid=False,
+            tickfont=dict(color=CHART_COLORS[2]),
+            tickformat=(PHP_TICK_FORMAT if line_currency else ",d"),
+            tickprefix=(PHP_TICK_PREFIX if line_currency else ""),
+        ))
     return fig
 
 

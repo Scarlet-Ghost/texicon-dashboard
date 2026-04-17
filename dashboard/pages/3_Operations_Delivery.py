@@ -154,7 +154,9 @@ with col1:
                 Count=("Delivered Amount", "count"), Value=("Delivered Amount", "sum")).sort_index().reset_index()
             dm["Month"] = dm["DEL_MONTH"].dt.strftime("%b %y")
             fig = line_bar_combo(dm, "Month", "Value", "Count", "Delivered Value", "Deliveries",
-                                 height=280, y_title="Delivered Value (PHP)")
+                                 height=280, y_title="Delivered Value (PHP)",
+                                 line_on_secondary=True, line_currency=False,
+                                 line_y_title="Deliveries (count)")
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
 with col2:
