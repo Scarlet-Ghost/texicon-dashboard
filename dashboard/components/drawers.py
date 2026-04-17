@@ -51,7 +51,11 @@ def render_nav(active_page="app", risk_count=0):
 def hero_kpi(label, value, sub_value=None, trend=None, delta=None, delta_label=None,
              tooltip=None, value_class="", spark_color="#00D68F"):
     """Render the focal hero metric at the top of a page. 3-4x taller than
-    supporting KPIs. One per page — the single headline a CEO should see first."""
+    supporting KPIs. One per page — the single headline a CEO should see first.
+
+    Note: `trend` and `spark_color` are retained for backward compatibility
+    but intentionally not rendered — the hero keeps its focus on value +
+    sub-text + delta label. Trend context lives in the page's monthly chart."""
     val_cls = f"hero-kpi-value {value_class}" if value_class else "hero-kpi-value"
 
     sub_html = ""
@@ -67,15 +71,13 @@ def hero_kpi(label, value, sub_value=None, trend=None, delta=None, delta_label=N
             cls = "warning" if value_class == "warning" else "negative"
         delta_html = f'<span class="hero-kpi-delta {cls}">{delta_label}</span>'
 
-    spark_html = ""
-    if trend and len(trend) >= 2:
-        spark_html = _sparkline_svg(trend, width=140, height=36, color=spark_color, stroke_width=2)
+    meta_html = f'<div class="hero-kpi-meta">{sub_html}{delta_html}</div>' if (sub_html or delta_html) else ""
 
     html = (
         f'<div class="hero-kpi"{_tt(tooltip)}>'
         f'<div class="hero-kpi-label">{label}</div>'
         f'<div class="{val_cls}">{value}</div>'
-        f'<div class="hero-kpi-meta">{sub_html}{delta_html}{spark_html}</div>'
+        f'{meta_html}'
         f'</div>'
     )
     st.markdown(html, unsafe_allow_html=True)
