@@ -23,7 +23,7 @@ from components.drawers import (
     render_breadcrumb, hero_kpi, section_divider)
 from components.charts import (
     bar_chart, horizontal_bar, donut_chart, line_bar_combo,
-    stacked_bar, histogram_chart, box_chart, funnel_chart, add_target_line)
+    stacked_bar, histogram_chart, funnel_chart)
 from components.formatting import format_php, format_pct, format_number, format_days
 
 st.markdown('<style>section[data-testid="stSidebar"]{display:none !important;}</style>', unsafe_allow_html=True)
@@ -178,10 +178,23 @@ with st.container(border=True):
         cd = so_f[so_f["CYCLE_DAYS"].notna() & (so_f["CYCLE_DAYS"] <= 90)].copy()
         if not cd.empty:
             cd["Warehouse"] = cd["Warehouse"].map(lambda w: WAREHOUSE_LABELS.get(w, w))
-            fig = box_chart(cd, "Warehouse", "CYCLE_DAYS", height=320,
-                            x_title="Warehouse", y_title="Cycle Days")
-            add_target_line(fig, 7, label="SLA: 7 days", color="#F26D6D")
-            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+            agg = cd.groupby("Warehouse").agg(
+                median=("CYCLE_DAYS", "median"),
+                within_sla=("CYCLE_DAYS", lambda s: (s <= 7).mean() * 100),
+                p90=("CYCLE_DAYS", lambda s: s.quantile(0.9)),
+                orders=("CYCLE_DAYS", "size"),
+            ).reset_index().sort_values("within_sla")
+
+            headers = ["Warehouse", "Median", "% \u2264 7d", "p90", "Orders"]
+            rows = [
+                [r["Warehouse"],
+                 f"{r['median']:.0f}d",
+                 f"{r['within_sla']:.0f}%",
+                 f"{r['p90']:.0f}d",
+                 f"{int(r['orders']):,}"]
+                for _, r in agg.iterrows()
+            ]
+            styled_table(headers, rows, num_cols=[1, 2, 3, 4])
         else:
             st.caption("Not enough cycle data to render distribution.")
 
