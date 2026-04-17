@@ -28,21 +28,24 @@ def _apply_axes(fig, x_title=None, y_title=None, y_currency=False, x_currency=Fa
 
 
 def bar_chart(df, x, y, color=None, color_map=None, orientation="v", barmode="group",
-              height=320, x_title=None, y_title=None, y_currency=True, label_map=None):
+              height=320, x_title=None, y_title=None, y_currency=True, label_map=None,
+              category_orders=None):
     if label_map:
         df = df.copy()
         for col in (x, y, color):
             if col and col in df.columns and df[col].dtype == object:
                 df[col] = df[col].map(lambda v: label_map.get(v, v))
+    px_kwargs = {"orientation": orientation}
+    if category_orders:
+        px_kwargs["category_orders"] = category_orders
     if color and color_map:
         fig = px.bar(df, x=x, y=y, color=color, color_discrete_map=color_map,
-                     orientation=orientation, barmode=barmode)
+                     barmode=barmode, **px_kwargs)
     elif color:
         fig = px.bar(df, x=x, y=y, color=color, color_discrete_sequence=CHART_COLORS,
-                     orientation=orientation, barmode=barmode)
+                     barmode=barmode, **px_kwargs)
     else:
-        fig = px.bar(df, x=x, y=y, orientation=orientation,
-                     color_discrete_sequence=CHART_COLORS)
+        fig = px.bar(df, x=x, y=y, color_discrete_sequence=CHART_COLORS, **px_kwargs)
     fig.update_layout(**_layout(height=height))
     fig.update_traces(
         marker=dict(cornerradius=6),

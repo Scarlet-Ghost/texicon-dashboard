@@ -113,10 +113,12 @@ else:
             section_card_header("Monthly Revenue Comparison", "Q1 2025 vs Q1 2026 by month", tooltip=TT["monthly_comparison"])
             mdf = yoy["monthly"]
             if not mdf.empty:
+                mdf = mdf.sort_values(["Year", "Month_Num"]).reset_index(drop=True)
                 mdf["Year"] = mdf["Year"].astype(str)
                 fig = bar_chart(mdf, x="Month_Label", y="Net Sales", color="Year",
                                 barmode="group", height=300,
-                                x_title="Month", y_title="Revenue (PHP)")
+                                x_title="Month", y_title="Revenue (PHP)",
+                                category_orders={"Month_Label": ["Jan", "Feb", "Mar"]})
                 st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
     with m_col2:
