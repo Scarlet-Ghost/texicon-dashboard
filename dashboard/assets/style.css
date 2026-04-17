@@ -130,9 +130,14 @@
     color: var(--fg-1);
 }
 
-.main .block-container {
-    max-width: 96vw;
-    padding: var(--s-4) var(--s-5) var(--s-7) var(--s-5);
+.main .block-container,
+[data-testid="stMainBlockContainer"],
+[data-testid="stAppViewBlockContainer"],
+section.main > div.block-container {
+    max-width: min(96vw, 1600px) !important;
+    padding: var(--s-4) var(--s-5) var(--s-7) var(--s-5) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
 }
 
 ::selection {
