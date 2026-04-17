@@ -93,30 +93,67 @@ def section_divider(title, eyebrow=None):
     )
 
 
+def _mom_chip_html(trend_data, lower_is_better=False):
+    """Compute a MoM delta chip from the last two entries of a monthly trend.
+    Returns '' if a meaningful delta can't be produced (too few points,
+    zero baseline, NaN). Semantic color flips for lower-is-better metrics."""
+    if not trend_data or len(trend_data) < 2:
+        return ""
+    curr, prev = trend_data[-1], trend_data[-2]
+    if curr is None or prev is None:
+        return ""
+    try:
+        curr_f, prev_f = float(curr), float(prev)
+    except (TypeError, ValueError):
+        return ""
+    if prev_f != prev_f or curr_f != curr_f:  # NaN check
+        return ""
+    if abs(prev_f) < 1e-9:
+        return ""
+    delta_pct = (curr_f - prev_f) / abs(prev_f) * 100
+    if abs(delta_pct) < 0.5:
+        arrow, cls = "→", "muted"
+    elif delta_pct > 0:
+        arrow = "↑"
+        cls = "negative" if lower_is_better else "positive"
+    else:
+        arrow = "↓"
+        cls = "positive" if lower_is_better else "negative"
+    return f'<div class="kpi-delta {cls}">{arrow} {abs(delta_pct):.1f}% MoM</div>'
+
+
 def kpi_card(label, value, delta=None, delta_label=None, value_class="", sub_text=None,
-             icon=None, icon_class="", tooltip=None, card_class="", trend_data=None):
+             icon=None, icon_class="", tooltip=None, card_class="", trend_data=None,
+             lower_is_better=False):
     """Render a KPI card. Icons are intentionally dropped from rendering — kept in
-    the signature for backward compatibility but visually ignored."""
+    the signature for backward compatibility but visually ignored.
+
+    Meta-row priority: explicit delta > MoM chip from trend_data > sub_text.
+    Sub_text always renders as a muted secondary line when present alongside
+    a primary meta."""
     val_cls = f"kpi-value {value_class}" if value_class else "kpi-value"
     card_cls = f"kpi-card {card_class}" if card_class else "kpi-card"
 
-    delta_html = ""
+    primary_meta = ""
     if delta is not None and delta_label:
         cls = "positive" if delta >= 0 else "negative"
-        delta_html = f'<div class="kpi-delta {cls}">{delta_label}</div>'
-    elif sub_text:
-        delta_html = f'<div class="kpi-delta muted">{sub_text}</div>'
+        primary_meta = f'<div class="kpi-delta {cls}">{delta_label}</div>'
+    elif trend_data:
+        primary_meta = _mom_chip_html(trend_data, lower_is_better=lower_is_better)
 
-    spark_html = ""
-    if trend_data and len(trend_data) >= 2:
-        spark_html = _sparkline_svg(trend_data, width=70, height=22)
+    sub_html = ""
+    if sub_text:
+        sub_html = f'<div class="kpi-delta muted">{sub_text}</div>'
+    # If no primary meta was produced but sub_text exists, sub_text becomes primary
+    if not primary_meta and sub_html:
+        primary_meta, sub_html = sub_html, ""
 
     html = (
         f'<div class="{card_cls}"{_tt(tooltip)}>'
         f'<div class="kpi-label">{label}</div>'
         f'<div class="{val_cls}">{value}</div>'
-        f'{delta_html}'
-        f'{spark_html}'
+        f'{primary_meta}'
+        f'{sub_html}'
         f'</div>'
     )
     st.markdown(html, unsafe_allow_html=True)

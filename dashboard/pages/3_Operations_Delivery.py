@@ -100,7 +100,7 @@ render_kpi_row([
                  card_class="danger-glow" if on_time < 70 else ""),
     {"label": "LEAD TIME", "value": f"{avg_cycle:.1f} days", "value_class": "neutral",
      "sub_text": f"Median {med_cycle:.0f} days", "tooltip": TT["avg_lead_time"],
-     "trend_data": trends.get("avg_lead_time")},
+     "trend_data": trends.get("avg_lead_time"), "lower_is_better": True},
     kpi_spec_count("DELIVERIES", total_deliveries, tooltip=TT["total_deliveries"],
                    trend_data=trends.get("total_deliveries")),
     kpi_spec_pct("BOOKING GAP", gap_pct,

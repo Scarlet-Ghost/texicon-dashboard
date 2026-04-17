@@ -132,11 +132,12 @@ render_kpi_row([
                   trend_data=trends.get("dso_estimate"),
                   card_class="danger-glow" if dso > 60 else ""),
     kpi_spec_pct("CR EXPOSURE", credit_pct, thresholds=(50, 70),
+                 lower_is_better=True,
                  tooltip=TT["credit_exposure"], sub_text=_caveat("cr_exposure", _ctx),
                  trend_data=trends.get("credit_pct")),
     kpi_spec_money("COLLECTIONS", total_collected,
                    tooltip=TT["collections_total"], sub_text=_caveat("collections", _ctx)),
-    kpi_spec_money("MTHLY CREDIT", monthly_credit,
+    kpi_spec_money("MTHLY CREDIT", monthly_credit, lower_is_better=True,
                    tooltip=TT["monthly_credit"], sub_text=_caveat("mthly_credit", _ctx),
                    trend_data=trends.get("net_revenue")),
 ])

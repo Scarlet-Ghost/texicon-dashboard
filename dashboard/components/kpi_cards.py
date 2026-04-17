@@ -35,6 +35,7 @@ def render_kpi_row(kpis, columns=None):
                     tooltip=kpi.get("tooltip"),
                     card_class=kpi.get("card_class", ""),
                     trend_data=kpi.get("trend_data"),
+                    lower_is_better=kpi.get("lower_is_better", False),
                 )
 
 
@@ -82,6 +83,7 @@ def kpi_spec_money(label, value_num, *, thresholds=None, lower_is_better=False,
         "tooltip": tooltip,
         "trend_data": trend_data,
         "card_class": card_class,
+        "lower_is_better": lower_is_better,
     }
 
 
@@ -98,11 +100,13 @@ def kpi_spec_pct(label, value_num, *, thresholds=None, lower_is_better=False,
         "tooltip": tooltip,
         "trend_data": trend_data,
         "card_class": card_class,
+        "lower_is_better": lower_is_better,
     }
 
 
 def kpi_spec_days(label, value_num, *, thresholds=None, sub_text=None, tooltip=None,
-                  trend_data=None, card_class="", value_class=None):
+                  trend_data=None, card_class="", value_class=None,
+                  lower_is_better=True):
     cls = value_class if value_class is not None else _class_from_thresholds(
         value_num or 0, thresholds)
     return {
@@ -113,11 +117,12 @@ def kpi_spec_days(label, value_num, *, thresholds=None, sub_text=None, tooltip=N
         "tooltip": tooltip,
         "trend_data": trend_data,
         "card_class": card_class,
+        "lower_is_better": lower_is_better,
     }
 
 
 def kpi_spec_count(label, value_num, *, sub_text=None, tooltip=None, trend_data=None,
-                   value_class="neutral", card_class=""):
+                   value_class="neutral", card_class="", lower_is_better=False):
     return {
         "label": label,
         "value": format_number(value_num),
@@ -126,6 +131,7 @@ def kpi_spec_count(label, value_num, *, sub_text=None, tooltip=None, trend_data=
         "tooltip": tooltip,
         "trend_data": trend_data,
         "card_class": card_class,
+        "lower_is_better": lower_is_better,
     }
 
 

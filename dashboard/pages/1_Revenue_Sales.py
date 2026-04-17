@@ -86,6 +86,7 @@ render_kpi_row([
     kpi_spec_money("GROSS SALES", total_gross, tooltip=TT["gross_sales"],
                    trend_data=trends.get("gross_sales")),
     kpi_spec_pct("DISCOUNT RATE", discount_pct, thresholds=(10, 15),
+                 lower_is_better=True,
                  tooltip=TT["discount_rate"], trend_data=trends.get("discount_pct"),
                  card_class="warning-glow" if discount_pct > 10 else ""),
     kpi_spec_count("ACTIVE CLIENTS", active_clients, tooltip=TT["active_clients"],
