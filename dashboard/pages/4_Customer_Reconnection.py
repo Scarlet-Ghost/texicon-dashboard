@@ -7,76 +7,89 @@ with open(css_path) as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 st.markdown('<style>section[data-testid="stSidebar"]{display:none !important;}</style>', unsafe_allow_html=True)
 
-from data.loader import load_sales_report
-from data.transformer import transform_sales_report
+from data.loader import load_sales_report, load_sales_order, load_delivery_report, get_data_freshness
+from data.transformer import transform_sales_report, transform_sales_order, transform_delivery_report
+from data.tooltips import RECONNECT as TT
+from data.risk_engine import compute_global_risks
 from data.reconnection import build_reconnection_data, get_customer_transactions, get_segment_summary
 from components.filters import render_top_filters, apply_filters_sr
 from components.drawers import (
     kpi_card, section_header, insight_card, styled_table,
-    badge, mini_card, top_bar, section_card_header,
-)
+    badge, mini_card, top_bar, section_card_header, render_nav,
+    empty_state, scroll_to_top_button, global_alert_strip, render_breadcrumb,
+    hero_kpi)
 from components.charts import donut_chart, bar_chart, horizontal_bar, stacked_bar
 from components.formatting import format_php, format_number
+from components.kpi_cards import render_kpi_row, kpi_spec_count
 from data.constants import RECON_COLORS, RECON_SEGMENT_ORDER
 from datetime import datetime
 
 # -- Load & Transform --
 sr_raw = load_sales_report()
+so_raw = load_sales_order()
+dr_raw = load_delivery_report()
 sr = transform_sales_report(sr_raw)
+so = transform_sales_order(so_raw)
+dr = transform_delivery_report(dr_raw)
 
-filters = render_top_filters(sr, page_key="recon")
+_risks = compute_global_risks(sr, so, dr)
+render_nav(active_page="4_Customer_Reconnection", risk_count=len(_risks))
+render_breadcrumb([("Executive", "app"), ("Customer Reconnection", None)])
+if _risks:
+    global_alert_strip(_risks)
+filters = render_top_filters(sr, page_key="recon", expand_filters=False)
 sr_f = apply_filters_sr(sr, filters)
 
 if sr_f.empty:
-    st.warning("No data matches the current filters.")
+    empty_state()
     st.stop()
 
 cust_df = build_reconnection_data(sr_f)
 
 if cust_df.empty:
-    st.warning("No customer data available.")
+    empty_state("No customer data available.", "Try adjusting your date range or filter criteria.")
     st.stop()
 
 data_end = sr_f["DATE"].max().strftime("%B %d, %Y") if pd.notna(sr_f["DATE"].max()) else "N/A"
-top_bar(data_end, datetime.now().strftime("%a, %b %d, %Y  %I:%M:%S %p"))
+top_bar(data_end, datetime.now().strftime("%a, %b %d, %Y  %I:%M:%S %p"), freshness_hours=get_data_freshness())
 
 st.markdown('<div class="page-title">Customer Reconnection</div>', unsafe_allow_html=True)
 st.markdown('<div class="page-subtitle">Identify inactive customers and prioritize re-engagement actions</div>', unsafe_allow_html=True)
 
-# -- KPI Cards --
+# -- Hero: Falling Out (the metric that drives the page) --
 summary = get_segment_summary(cust_df)
+fo_count_hero = summary["Falling Out"]["count"]
+fo_rev_hero = summary["Falling Out"]["revenue"]
+total_hero = summary["total_customers"]
+fo_share_hero = (fo_count_hero / total_hero * 100) if total_hero > 0 else 0
 
-kpi_cols = st.columns(4)
-with kpi_cols[0]:
-    kpi_card(
-        "FALLING OUT",
-        format_number(summary["Falling Out"]["count"]),
-        value_class="danger",
-        sub_text=f"{format_php(summary['Falling Out']['revenue'])} at risk",
-        icon="\U0001F6A8", icon_class="danger",
-    )
-with kpi_cols[1]:
-    kpi_card(
-        "AT RISK",
-        format_number(summary["At Risk"]["count"]),
-        value_class="warning",
-        sub_text=f"{format_php(summary['At Risk']['revenue'])} at risk",
-        icon="\u26A0", icon_class="warning",
-    )
-with kpi_cols[2]:
-    kpi_card(
-        "HIGH POTENTIAL",
-        format_number(summary["High Potential"]["count"]),
-        sub_text=f"{format_php(summary['High Potential']['revenue'])} revenue",
-        icon="\u2B50",
-    )
-with kpi_cols[3]:
-    kpi_card(
-        "TOTAL CUSTOMERS",
-        format_number(summary["total_customers"]),
-        sub_text=f"{format_php(summary['total_revenue'])} total revenue",
-        icon="\U0001F465",
-    )
+hero_kpi(
+    label="FALLING OUT CUSTOMERS",
+    value=format_number(fo_count_hero),
+    sub_value=f"{fo_share_hero:.1f}% of {total_hero:,} customers \u00b7 {format_php(fo_rev_hero)} revenue at risk (>90d inactive)",
+    tooltip=TT["falling_out"],
+    value_class="danger",
+    spark_color="#F26D6D",
+)
+
+# -- Supporting KPI Cards --
+render_kpi_row([
+    kpi_spec_count("FALLING OUT", summary["Falling Out"]["count"], value_class="danger",
+                   sub_text=f"{format_php(summary['Falling Out']['revenue'])} at risk",
+                   tooltip=TT["falling_out"],
+                   card_class="segment-falling-out"),
+    kpi_spec_count("AT RISK", summary["At Risk"]["count"], value_class="warning",
+                   sub_text=f"{format_php(summary['At Risk']['revenue'])} at risk",
+                   tooltip=TT["at_risk"],
+                   card_class="segment-at-risk"),
+    kpi_spec_count("HIGH POTENTIAL", summary["High Potential"]["count"],
+                   sub_text=f"{format_php(summary['High Potential']['revenue'])} revenue",
+                   tooltip=TT["high_potential"],
+                   card_class="segment-high-potential"),
+    kpi_spec_count("TOTAL CUSTOMERS", summary["total_customers"],
+                   sub_text=f"{format_php(summary['total_revenue'])} total revenue",
+                   tooltip=TT["total_customers"]),
+])
 
 # -- Insight Banner --
 fo_count = summary["Falling Out"]["count"]
@@ -88,14 +101,12 @@ if fo_pct > 40:
     insight_card(
         f"<strong>{fo_pct:.0f}%</strong> of customers ({fo_count}) are Falling Out with "
         f"<strong>{format_php(fo_rev)}</strong> revenue at risk. Prioritize re-engagement.",
-        "warning",
-    )
+        "warning")
 else:
     insight_card(
         f"Customer health is stable. <strong>{summary['High Potential']['count']}</strong> "
         f"active customers generating <strong>{format_php(summary['High Potential']['revenue'])}</strong>.",
-        "info",
-    )
+        "info")
 
 # -- Charts Row --
 st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
@@ -104,7 +115,7 @@ chart_col1, chart_col2 = st.columns(2)
 
 with chart_col1:
     with st.container(border=True):
-        section_card_header("Segment Distribution", "Customer count by segment")
+        section_card_header("Segment Distribution", "Customer count by segment", tooltip=TT["segment_distribution"])
         seg_labels = []
         seg_values = []
         seg_colors = []
@@ -114,13 +125,12 @@ with chart_col1:
             seg_colors.append(RECON_COLORS[seg])
         fig = donut_chart(
             seg_labels, seg_values, colors=seg_colors,
-            center_text=str(total),
-        )
+            center_text=str(total))
         st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
 with chart_col2:
     with st.container(border=True):
-        section_card_header("Segment Revenue", "Revenue at risk by segment")
+        section_card_header("Segment Revenue", "Revenue at risk by segment", tooltip=TT["segment_revenue"])
         rev_data = pd.DataFrame([
             {"Segment": seg, "Revenue": summary[seg]["revenue"]}
             for seg in RECON_SEGMENT_ORDER
@@ -128,7 +138,7 @@ with chart_col2:
         fig = bar_chart(
             rev_data, x="Segment", y="Revenue",
             color="Segment", color_map=RECON_COLORS, height=300,
-        )
+            y_title="Revenue (PHP)", x_title="Segment")
         st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
 # -- Filters + Search --
@@ -166,8 +176,7 @@ st.download_button(
     "Download CSV",
     csv_data.to_csv(index=False),
     file_name="texicon_reconnection_customers.csv",
-    mime="text/csv",
-)
+    mime="text/csv")
 
 # -- Customer Table --
 BADGE_MAP = {"Falling Out": "red", "At Risk": "amber", "High Potential": "green"}
@@ -179,6 +188,7 @@ if shown.empty:
     st.info("No customers match the current filters.")
 else:
     rows = []
+    row_classes = []
     for i, (_, r) in enumerate(shown.iterrows()):
         seg_badge = badge(r["segment"], BADGE_MAP.get(r["segment"], "green"))
         tp = str(r.get("top_products", "") or "")
@@ -195,13 +205,20 @@ else:
             str(r.get("area_group", "")),
             str(r.get("sales_rep", ""))[:20],
         ])
+        if r["segment"] == "Falling Out":
+            row_classes.append("row-danger")
+        elif r["segment"] == "At Risk":
+            row_classes.append("row-warning")
+        else:
+            row_classes.append("")
 
     styled_table(
         ["#", "Priority", "Segment", "Customer", "Revenue", "Days Inactive",
          "Orders", "Top Products", "Area", "Sales Rep"],
         rows,
         green_cols=[4],
-    )
+        row_classes=row_classes,
+        num_cols=[0, 1, 4, 5, 6])
 
     if len(display_df) > page_size:
         st.caption(f"Showing top {page_size} of {len(display_df)} customers.")
@@ -218,13 +235,13 @@ for _, row in detail_df.iterrows():
     with st.expander(f"{client}  |  {seg_label}  |  {format_php(row['total_revenue'])}"):
         mc1, mc2, mc3, mc4 = st.columns(4)
         with mc1:
-            mini_card("Total Revenue", format_php(row["total_revenue"]), icon="\U0001F4B0")
+            mini_card("Total Revenue", format_php(row["total_revenue"]))
         with mc2:
-            mini_card("Quantity (L/KG)", f'{row["total_qty"]:,.0f}', icon="\U0001F4E6")
+            mini_card("Quantity (L/KG)", f'{row["total_qty"]:,.0f}')
         with mc3:
-            mini_card("Orders", str(int(row["tx_count"])), icon="\U0001F4CB")
+            mini_card("Orders", str(int(row["tx_count"])))
         with mc4:
-            mini_card("Days Inactive", f'{int(row["days_inactive"])}', icon="\u23F0")
+            mini_card("Days Inactive", f'{int(row["days_inactive"])}')
 
         tx = get_customer_transactions(sr_f, client)
         if tx.empty:
@@ -245,7 +262,7 @@ for _, row in detail_df.iterrows():
                 ["Date", "Invoice", "Item", "Category", "Qty (L/KG)", "Net Sales", "Terms"],
                 tx_rows,
                 green_cols=[5],
-            )
+                num_cols=[4, 5])
             if len(tx) > 20:
                 st.caption(f"Showing 20 of {len(tx)} transactions.")
 
@@ -256,19 +273,20 @@ col_a1, col_a2 = st.columns(2)
 
 with col_a1:
     with st.container(border=True):
-        section_card_header("Segments by Area", "Geographic distribution of customer health")
+        section_card_header("Segments by Area", "Geographic distribution of customer health", tooltip=TT["segments_by_area"])
         if "area_group" in cust_df.columns:
             area_seg = cust_df.groupby(["area_group", "segment"]).size().reset_index(name="count")
             if not area_seg.empty:
                 fig = stacked_bar(
                     area_seg, x="area_group", y="count", color="segment",
                     color_map=RECON_COLORS, height=300,
-                )
+                    x_title="Area", y_title="Customers", y_currency=False)
+                fig.update_traces(hovertemplate="<b>%{x}</b><br>%{fullData.name}: %{y} customers<extra></extra>")
                 st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
 with col_a2:
     with st.container(border=True):
-        section_card_header("Falling Out by Sales Rep", "Top 10 reps with inactive customers")
+        section_card_header("Falling Out by Sales Rep", "Top 10 reps with inactive customers", tooltip=TT["falling_out_by_rep"])
         if "sales_rep" in cust_df.columns:
             fo_by_rep = (
                 cust_df[cust_df["segment"] == "Falling Out"]
@@ -279,5 +297,9 @@ with col_a2:
                 .reset_index()
             )
             if not fo_by_rep.empty:
-                fig = horizontal_bar(fo_by_rep, x="count", y="sales_rep", height=300)
+                fig = horizontal_bar(fo_by_rep, x="count", y="sales_rep",
+                                     x_title="Falling-Out Customers", x_currency=False)
+                fig.update_traces(hovertemplate="<b>%{y}</b><br>%{x} customers<extra></extra>")
                 st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+
+scroll_to_top_button()

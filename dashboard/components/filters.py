@@ -14,19 +14,30 @@ def _init_state():
         st.session_state.period = "Full Period"
 
 
-def render_top_filters(sr_df, so_df=None, dr_df=None, page_key="main"):
+def render_top_filters(sr_df, so_df=None, dr_df=None, page_key="main", expand_filters=False):
     """Render filters as a top bar with period buttons + dropdown filters.
-    Returns a filter dict. Sidebar is NOT used."""
+    Returns a filter dict. Sidebar is NOT used.
+    expand_filters: when True, "More Filters" expander opens by default."""
     _init_state()
 
     # --- Period Buttons Row ---
-    pcols = st.columns([1, 1, 1, 1, 4])
+    pcols = st.columns([1, 1, 1, 1, 1, 0.7])
     for i, label in enumerate(["Q1 2025", "Q1 2026", "Full Period", "Custom"]):
         with pcols[i]:
             btn_type = "primary" if st.session_state.period == label else "secondary"
             if st.button(label, key=f"period_{label}_{page_key}", use_container_width=True, type=btn_type):
                 st.session_state.period = label
                 st.rerun()
+
+    # Reset button
+    with pcols[5]:
+        if st.button("Reset", key=f"reset_{page_key}", use_container_width=True, type="secondary"):
+            st.session_state.period = "Full Period"
+            for k in list(st.session_state.keys()):
+                if any(k.startswith(p) for p in [f"area_{page_key}", f"pcat_{page_key}",
+                                                   f"terms_{page_key}", f"wh_{page_key}"]):
+                    del st.session_state[k]
+            st.rerun()
 
     filters = {}
 
@@ -43,7 +54,7 @@ def render_top_filters(sr_df, so_df=None, dr_df=None, page_key="main"):
         min_d = sr_df["DATE"].min()
         max_d = sr_df["DATE"].max()
         if pd.notna(min_d) and pd.notna(max_d):
-            dc1, dc2, _ = st.columns([1, 1, 2])
+            dc1, dc2 = st.columns(2)
             with dc1:
                 start_date = st.date_input("From", value=min_d.date(), min_value=min_d.date(),
                                            max_value=max_d.date(), key=f"cust_start_{page_key}")
@@ -54,7 +65,7 @@ def render_top_filters(sr_df, so_df=None, dr_df=None, page_key="main"):
                 filters["date_end"] = pd.Timestamp(end_date)
 
     # --- Dropdown Filters Row (inside expander) ---
-    with st.expander("More Filters", expanded=False):
+    with st.expander("More Filters", expanded=expand_filters):
         f1, f2, f3, f4 = st.columns(4)
 
         with f1:
@@ -86,7 +97,66 @@ def render_top_filters(sr_df, so_df=None, dr_df=None, page_key="main"):
                 sel = st.multiselect("Warehouse", wh_list, default=wh_list, key=f"wh_{page_key}")
                 filters["warehouse"] = sel
 
+    # --- Active Filter Chips ---
+    _render_active_chips(filters, sr_df, so_df, dr_df, page_key)
+
     return filters
+
+
+def _render_active_chips(filters, sr_df, so_df, dr_df, page_key):
+    """Show active filter chips for non-default filters."""
+    chips = []
+
+    if st.session_state.period != "Full Period":
+        chips.append(f"Period: {st.session_state.period}")
+
+    if "area_group" in filters and "AREA GROUP" in sr_df.columns:
+        all_areas = sorted(sr_df["AREA GROUP"].dropna().unique().tolist())
+        if set(filters["area_group"]) != set(all_areas):
+            chips.append(f"Areas: {len(filters['area_group'])}/{len(all_areas)}")
+
+    if "product_category" in filters and "PRODUCT CATEGORY" in sr_df.columns:
+        all_cats = sorted(sr_df["PRODUCT CATEGORY"].dropna().unique().tolist())
+        if set(filters["product_category"]) != set(all_cats):
+            chips.append(f"Categories: {len(filters['product_category'])}/{len(all_cats)}")
+
+    if "terms" in filters and "TERMS" in sr_df.columns:
+        all_terms = sorted(sr_df["TERMS"].dropna().unique().tolist())
+        if set(filters["terms"]) != set(all_terms):
+            chips.append(f"Terms: {len(filters['terms'])}/{len(all_terms)}")
+
+    if "warehouse" in filters:
+        wh_vals = set()
+        if so_df is not None and "Warehouse" in so_df.columns:
+            wh_vals.update(so_df["Warehouse"].dropna().unique())
+        if dr_df is not None and "Warehouse" in dr_df.columns:
+            wh_vals.update(dr_df["Warehouse"].dropna().unique())
+        if wh_vals and set(filters["warehouse"]) != wh_vals:
+            chips.append(f"Warehouses: {len(filters['warehouse'])}/{len(wh_vals)}")
+
+    if chips:
+        chip_html = "".join(f'<span class="filter-chip">{c}</span>' for c in chips)
+        st.markdown(f'<div class="filter-chips-row">{chip_html}</div>', unsafe_allow_html=True)
+
+
+def get_active_filter_count(filters, sr_df, so_df=None):
+    """Return count of active (non-default) filters for nav badge."""
+    count = 0
+    if st.session_state.get("period", "Full Period") != "Full Period":
+        count += 1
+    if "area_group" in filters and "AREA GROUP" in sr_df.columns:
+        all_areas = sorted(sr_df["AREA GROUP"].dropna().unique().tolist())
+        if set(filters["area_group"]) != set(all_areas):
+            count += 1
+    if "product_category" in filters and "PRODUCT CATEGORY" in sr_df.columns:
+        all_cats = sorted(sr_df["PRODUCT CATEGORY"].dropna().unique().tolist())
+        if set(filters["product_category"]) != set(all_cats):
+            count += 1
+    if "terms" in filters and "TERMS" in sr_df.columns:
+        all_terms = sorted(sr_df["TERMS"].dropna().unique().tolist())
+        if set(filters["terms"]) != set(all_terms):
+            count += 1
+    return count
 
 
 def apply_filters_sr(df, filters):

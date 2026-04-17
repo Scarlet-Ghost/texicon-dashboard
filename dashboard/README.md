@@ -30,7 +30,7 @@ Opens at **http://localhost:8501**
 
 ## Data Sources
 
-All source files are Excel (.xlsx) located in `../Sample Documents/`:
+All source files are Excel (.xlsx) bundled at `data/sample/`:
 
 | File | Rows | Period | Content |
 |------|------|--------|---------|
@@ -316,3 +316,19 @@ The main page (`app.py`) follows this section order (matching SMIFP):
 4. **Hard-coded term days** — Payment terms to days mapping (`30PDC -> 30`, `60PDC -> 60`, etc.) is hard-coded in each page that needs it.
 5. **No authentication** — open access on the network URL.
 6. **No contact logging** — Customer Reconnection is read-only analytics (no database for follow-up tracking).
+
+---
+
+## Deploy to Streamlit Community Cloud
+
+1. Push this repo to GitHub (private is fine on the free tier — 1 private app allowed).
+2. Go to https://share.streamlit.io and sign in with GitHub. Grant the Streamlit GitHub app access to the repo.
+3. Click **New app** and fill in:
+   - **Repository:** `<user>/texicon-dashboard`
+   - **Branch:** `main`
+   - **Main file path:** `dashboard/app.py`
+   - **App URL:** your choice (e.g. `texicon-dashboard` → `https://texicon-dashboard.streamlit.app`)
+4. Click **Deploy**. First build takes 2–5 min. Python version is read from `dashboard/runtime.txt` (`python-3.11`). Deps come from `dashboard/requirements.txt`.
+
+Every `git push origin main` thereafter triggers an automatic redeploy. Logs and reboot are under **Manage app** → bottom-right of the live URL.
+
