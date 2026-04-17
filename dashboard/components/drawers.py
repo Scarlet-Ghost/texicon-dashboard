@@ -22,17 +22,17 @@ _NAV_PAGES = [
 
 
 def render_nav(active_page="app", risk_count=0):
-    """Render the modern top navigation bar using st.page_link for routing."""
-    risk_badge = ""
-    if risk_count > 0:
-        risk_badge = f'<span class="nav-risk-badge">{risk_count}</span>'
+    """Render the modern top navigation bar using st.page_link for routing.
 
+    `risk_count` is accepted for signature compatibility but no longer shown
+    as a badge — the dedicated `global_alert_strip` below the nav already
+    communicates active warnings, and the brand label stays clean."""
     with st.container(border=True):
         cols = st.columns([1.4] + [1] * len(_NAV_PAGES))
 
         with cols[0]:
             st.markdown(
-                f'<div class="nav-brand-inline">Texicon{risk_badge}</div>',
+                '<div class="nav-brand-inline">Texicon</div>',
                 unsafe_allow_html=True,
             )
 
