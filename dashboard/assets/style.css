@@ -432,7 +432,7 @@ section[data-testid="stSidebar"] {
 
 .hero-kpi .kpi-sparkline {
     margin: 0;
-    margin-left: auto;
+    opacity: 0.9;
 }
 
 /* ==========================================
