@@ -528,12 +528,6 @@ with wc2_cols[2]:
              tooltip=TT["rev_per_customer"])
 
 # ============================================
-# METRIC DEFINITIONS GLOSSARY
-# ============================================
-st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
-glossary_panel(METRIC_DEFINITIONS)
-
-# ============================================
 # SCROLL TO TOP + COMPUTE TIME
 # ============================================
 # Re-render top_bar with compute time now that everything is rendered

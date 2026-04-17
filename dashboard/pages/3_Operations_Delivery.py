@@ -121,17 +121,17 @@ st.markdown(
     f'''<div style="display:flex; gap:var(--s-5); margin-bottom:var(--s-4); padding: var(--s-3) 0;">
         <div style="flex:1;">
             <div style="font-size:var(--f-xs); color:var(--fg-2); text-transform:uppercase; letter-spacing:0.06em; font-weight:500;">BOOKED</div>
-            <div style="font-size:28px; font-weight:600; color:var(--fg-0); letter-spacing:-0.02em; margin-top:4px;">{format_php(total_bookings)}</div>
+            <div style="font-size:22px; font-weight:600; color:var(--fg-0); letter-spacing:-0.02em; margin-top:4px;">{format_php(total_bookings)}</div>
             <div style="font-size:var(--f-sm); color:var(--fg-2); margin-top:2px;">{_booked_pct:.0f}% of bookings</div>
         </div>
         <div style="flex:1;">
             <div style="font-size:var(--f-xs); color:var(--fg-2); text-transform:uppercase; letter-spacing:0.06em; font-weight:500;">DELIVERED</div>
-            <div style="font-size:28px; font-weight:600; color:var(--fg-0); letter-spacing:-0.02em; margin-top:4px;">{format_php(total_delivered)}</div>
+            <div style="font-size:22px; font-weight:600; color:var(--fg-0); letter-spacing:-0.02em; margin-top:4px;">{format_php(total_delivered)}</div>
             <div style="font-size:var(--f-sm); color:var(--fg-2); margin-top:2px;">{_delivered_pct:.1f}% fulfilled</div>
         </div>
         <div style="flex:1;">
             <div style="font-size:var(--f-xs); color:var(--accent); text-transform:uppercase; letter-spacing:0.06em; font-weight:500;">INVOICED</div>
-            <div style="font-size:28px; font-weight:600; color:var(--accent); letter-spacing:-0.02em; margin-top:4px;">{format_php(total_net)}</div>
+            <div style="font-size:22px; font-weight:600; color:var(--accent); letter-spacing:-0.02em; margin-top:4px;">{format_php(total_net)}</div>
             <div style="font-size:var(--f-sm); color:var(--fg-2); margin-top:2px;">{_invoiced_pct:.1f}% of bookings</div>
         </div>
     </div>''',

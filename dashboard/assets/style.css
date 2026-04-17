@@ -115,7 +115,12 @@
 #MainMenu, footer, header,
 [data-testid="stToolbar"],
 [data-testid="stDecoration"],
-[data-testid="stStatusWidget"] {
+[data-testid="stStatusWidget"],
+[data-testid="manage-app-button"],
+.viewerBadge_container__r5tak,
+.viewerBadge_link__qRIco,
+a[href^="https://share.streamlit.io"],
+a[href*="streamlit.io/cloud"] {
     display: none !important;
 }
 
