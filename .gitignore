@@ -3,7 +3,9 @@ __pycache__/
 .DS_Store
 *.egg-info/
 .env
+# Streamlit secrets — never commit
 .streamlit/secrets.toml
+dashboard/.streamlit/secrets.toml
 ~$*.xlsx
 .ipynb_checkpoints/
 .vscode/
