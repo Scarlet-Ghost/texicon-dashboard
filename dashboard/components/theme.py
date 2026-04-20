@@ -239,8 +239,17 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
   color: var(--text-primary) !important;
   opacity: 1;
 }}
-[data-testid="stPageLink"] a p {{
-  color: inherit !important;
+/* Force every descendant to inherit the anchor's color — Streamlit wraps the
+   label in nested div/p/span in some versions; any one of them with its own
+   color wins against the <a> rule. Also strip any default button-like bg so
+   the nav doesn't render as dark boxes on dark mode. */
+[data-testid="stPageLink"] a,
+[data-testid="stPageLink"] a *,
+[data-testid="stPageLink"] a p,
+[data-testid="stPageLink"] a span,
+[data-testid="stPageLink"] a div {{
+  color: var(--text-primary) !important;
+  background: transparent !important;
   margin: 0 !important;
   font-size: inherit !important;
   font-weight: inherit !important;
