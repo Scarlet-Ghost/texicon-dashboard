@@ -11,3 +11,5 @@ dashboard/.streamlit/secrets.toml
 .vscode/
 .venv/
 .superpowers/
+.playwright-mcp/
+dashboard/.env.profile
