@@ -1,14 +1,21 @@
 import streamlit as st
-st.set_page_config(layout="wide", page_title="Data Explorer")
+st.set_page_config(page_title="Data Explorer — Texicon", layout="wide",
+                   initial_sidebar_state="collapsed")
+
+try:
+    from components.theme import inject_css, current_theme
+    from components.drawers import render_top_bar
+except ModuleNotFoundError:
+    from dashboard.components.theme import inject_css, current_theme
+    from dashboard.components.drawers import render_top_bar
+
+st.markdown(inject_css(current_theme()), unsafe_allow_html=True)
+render_top_bar(active_page="Data")
+
 import pandas as pd
 import os
 from datetime import datetime
 from io import BytesIO
-
-css_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "style.css")
-with open(css_path) as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-st.markdown('<style>section[data-testid="stSidebar"]{display:none !important;}</style>', unsafe_allow_html=True)
 
 from components.auth import require_role, user_chip, current_role
 
@@ -139,13 +146,11 @@ cr = transform_collection_report(cr_raw)
 # ============================================
 
 _risks = compute_global_risks(sr, so, dr)
-render_nav(active_page="6_Data_Explorer", risk_count=len(_risks), role=current_role())
 render_breadcrumb([("Executive", "app"), ("Data Explorer", None)])
 if _risks:
     global_alert_strip(_risks)
 
 data_end = sr["DATE"].max().strftime("%B %d, %Y") if ("DATE" in sr.columns and not sr.empty and pd.notna(sr["DATE"].max())) else "N/A"
-top_bar(data_end, datetime.now().strftime("%a, %b %d, %Y  %I:%M:%S %p"), freshness_hours=get_data_freshness())
 user_chip()
 
 st.markdown('<div class="page-title">Data Explorer</div>', unsafe_allow_html=True)
