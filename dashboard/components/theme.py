@@ -129,6 +129,7 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 }}
 
 /* ===== Topbar ===== */
+/* Legacy .tx-topbar (kept for top_bar_html fallback callers) */
 .tx-topbar {{
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 20px; background: var(--bg-surface);
@@ -136,44 +137,38 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
   margin-bottom: 12px; position: relative;
 }}
 .tx-brand {{
-  display: flex; align-items: center; gap: 10px;
-  font-family: var(--font-serif); font-weight: 700; font-size: 24px;
-  letter-spacing: 0.04em; color: var(--text-primary);
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--font-serif); font-weight: 500; font-size: 20px;
+  letter-spacing: 0.03em; color: var(--text-primary);
 }}
 .tx-leaf {{
-  width: 20px; height: 12px; background: var(--brand-gold);
+  width: 18px; height: 11px; background: var(--brand-gold);
   border-radius: 50% 50% 50% 0; transform: rotate(-25deg); display: inline-block;
 }}
 .tx-topright {{ display: flex; align-items: center; gap: 10px; }}
 .tx-topright .tx-badge {{ font-size: 11px; padding: 4px 10px; }}
 
-/* Logout slot: yanked up into the topbar card on the right side */
-.tx-logout-slot {{
-  position: absolute; top: 10px; right: 64px; z-index: 20;
+/* New topbar: real st.container holding brand + role chip + theme + logout.
+   Targeted via :has(.tx-brand-row) so only this specific vertical block
+   becomes the topbar card; other containers keep their native layout. */
+[data-testid="stVerticalBlock"]:has(> [data-testid="stHorizontalBlock"] .tx-brand-row) {{
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 10px 16px; margin-bottom: 12px;
 }}
-.tx-logout-slot [data-testid="stButton"] > button {{
-  padding: 4px 12px !important; font-size: 11px !important;
+.tx-brand-row {{
+  display: flex; align-items: center; gap: 12px;
+  min-height: 36px;
+}}
+.tx-role-chip {{
+  display: inline-block; padding: 3px 10px; border-radius: 99px;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--bg-page); color: var(--text-secondary);
+}}
+/* Compact button treatment inside the topbar card */
+[data-testid="stVerticalBlock"]:has(> [data-testid="stHorizontalBlock"] .tx-brand-row) [data-testid="stButton"] > button {{
+  padding: 6px 12px !important; font-size: 11px !important;
   min-height: 0 !important; line-height: 1.4 !important;
-  background: transparent !important; color: var(--text-secondary) !important;
-  border: 1px solid var(--border) !important;
-}}
-.tx-logout-slot [data-testid="stButton"] > button:hover {{
-  background: var(--bg-subtle) !important; color: var(--text-primary) !important;
-}}
-
-/* Floating theme toggle: fixed bottom-left FAB */
-.tx-theme-fab {{
-  position: fixed; bottom: 20px; left: 20px; z-index: 9000;
-}}
-.tx-theme-fab [data-testid="stButton"] > button {{
-  padding: 8px 14px !important; font-size: 12px !important;
-  border-radius: 99px !important;
-  background: var(--bg-surface) !important; color: var(--text-primary) !important;
-  border: 1px solid var(--border) !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
-}}
-.tx-theme-fab [data-testid="stButton"] > button:hover {{
-  background: var(--bg-subtle) !important;
 }}
 .tx-toggle {{
   display: inline-flex; background: var(--bg-page); border: 1px solid var(--border);
@@ -363,6 +358,7 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 }}
 .kpi-card:hover {{ transform: translateY(-1px); box-shadow: var(--shadow-hover); }}
 .kpi-card.danger-glow {{ border-left: 3px solid var(--danger); }}
+.kpi-card.warning-glow {{ border-left: 3px solid var(--brand-gold); }}
 .kpi-label {{ font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }}
 .kpi-value {{ font-size: 22px; font-weight: 600; margin-top: 4px; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; color: var(--text-primary); }}
 .kpi-value--na {{ color: var(--text-muted); }}
@@ -449,6 +445,75 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
   white-space: nowrap; transition: background 100ms ease;
 }}
 .filter-chip:hover {{ background: rgba(45,138,62,0.18); }}
+
+/* ===== Period segmented control + Reset slot =====
+   Marker divs emitted by render_top_filters(): .tx-segmented wraps the 4
+   period pills in a grouped container; .tx-reset-slot wraps the Reset
+   button as a visually distinct ghost/danger tertiary. Streamlit places
+   each marker div as a sibling before the stHorizontalBlock that holds
+   the actual buttons, so we target the following-sibling block with :has. */
+
+/* Group background for the 4-pill cluster. We target the stHorizontalBlock
+   that immediately follows the .tx-segmented marker div. */
+.tx-segmented + div [data-testid="stHorizontalBlock"],
+[data-testid="stVerticalBlock"]:has(> .tx-segmented) [data-testid="stHorizontalBlock"]:first-of-type {{
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px !important;
+}}
+
+/* Inactive period pill: borderless, compact, muted text. */
+[data-testid="stVerticalBlock"]:has(> .tx-segmented) [data-testid="stButton"] > button {{
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  color: var(--text-secondary) !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  padding: 6px 10px !important;
+  min-height: 0 !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  transition: background 120ms ease, color 120ms ease;
+}}
+[data-testid="stVerticalBlock"]:has(> .tx-segmented) [data-testid="stButton"] > button:hover {{
+  background: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+}}
+
+/* Active period pill (Streamlit renders type="primary" as kind="primary"). */
+[data-testid="stVerticalBlock"]:has(> .tx-segmented) [data-testid="stButton"] > button[kind="primary"] {{
+  background: var(--brand-green) !important;
+  color: #ffffff !important;
+  font-weight: 500 !important;
+  border-color: var(--brand-green) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06) !important;
+}}
+[data-testid="stVerticalBlock"]:has(> .tx-segmented) [data-testid="stButton"] > button[kind="primary"]:hover {{
+  background: var(--brand-green) !important;
+  color: #ffffff !important;
+  filter: brightness(1.05);
+}}
+
+/* Reset slot: ghost/danger tertiary. Clearly separated from period pills. */
+[data-testid="stVerticalBlock"]:has(> .tx-reset-slot) [data-testid="stButton"] > button {{
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  color: var(--danger) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 6px 10px !important;
+  min-height: 0 !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  transition: background 120ms ease;
+}}
+[data-testid="stVerticalBlock"]:has(> .tx-reset-slot) [data-testid="stButton"] > button:hover {{
+  background: rgba(220,38,38,0.08) !important;
+  border-color: var(--danger-border) !important;
+  color: var(--danger) !important;
+}}
 
 /* ===== Login screen ===== */
 /* Streamlit renders st.form as [data-testid="stForm"]; style it as the card panel. */
@@ -537,6 +602,10 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
   background: rgba(220,38,38,0.10); color: var(--danger);
   border: 1px solid var(--danger);
 }}
+
+/* ===== Section gaps (emitted by app.py + pages as <div class="section-gap">) ===== */
+.section-gap    {{ height: 24px; }}
+.section-gap-sm {{ height: 12px; }}
 
 /* ===== Page title / subtitle ===== */
 .page-title {{

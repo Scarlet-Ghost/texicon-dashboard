@@ -17,7 +17,7 @@ import numpy as np
 import os
 from datetime import datetime
 
-from components.auth import require_role, user_chip, current_role
+from components.auth import require_role, current_role
 
 require_role(allowed=["owner"])
 
@@ -75,7 +75,6 @@ filters = render_top_filters(sr, page_key="cash", expand_filters=False)
 sr_f = apply_filters_sr(sr, filters)
 
 data_end = sr_f["DATE"].max().strftime("%B %d, %Y") if ("DATE" in sr_f.columns and not sr_f.empty and pd.notna(sr_f["DATE"].max())) else "N/A"
-user_chip()
 
 st.markdown('<div class="page-title">Cash Flow & Collections</div>', unsafe_allow_html=True)
 st.markdown('<div class="page-subtitle">Accounts Receivable, DSO Analysis & Payment Terms Compliance</div>', unsafe_allow_html=True)

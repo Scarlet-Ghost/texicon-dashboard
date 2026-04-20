@@ -21,23 +21,35 @@ def render_top_filters(sr_df, so_df=None, dr_df=None, page_key="main", expand_fi
     _init_state()
 
     # --- Period Buttons Row ---
-    pcols = st.columns([1, 1, 1, 1, 1, 0.7])
-    for i, label in enumerate(["Q1 2025", "Q1 2026", "Full Period", "Custom"]):
-        with pcols[i]:
-            btn_type = "primary" if st.session_state.period == label else "secondary"
-            if st.button(label, key=f"period_{label}_{page_key}", use_container_width=True, type=btn_type):
-                st.session_state.period = label
-                st.rerun()
+    # Layout: LEFT cluster = segmented period control (4 pills), RIGHT cluster = Reset (distinct, destructive).
+    # The marker divs (.tx-segmented / .tx-reset-slot) are targeted by theme.py CSS to
+    # visually group the period pills and separate Reset as a ghost/danger tertiary.
+    outer_left, outer_right = st.columns([4, 1.2])
 
-    # Reset button
-    with pcols[5]:
-        if st.button("Reset", key=f"reset_{page_key}", use_container_width=True, type="secondary"):
+    with outer_left:
+        st.markdown('<div class="tx-segmented">', unsafe_allow_html=True)
+        seg_cols = st.columns(4)
+        for i, label in enumerate(["Q1 2025", "Q1 2026", "Full Period", "Custom"]):
+            with seg_cols[i]:
+                is_active = st.session_state.period == label
+                btn_type = "primary" if is_active else "secondary"
+                if st.button(label, key=f"period_{label}_{page_key}",
+                             use_container_width=True, type=btn_type):
+                    st.session_state.period = label
+                    st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with outer_right:
+        st.markdown('<div class="tx-reset-slot">', unsafe_allow_html=True)
+        if st.button("Reset", key=f"reset_{page_key}",
+                     use_container_width=True, type="secondary"):
             st.session_state.period = "Full Period"
             for k in list(st.session_state.keys()):
                 if any(k.startswith(p) for p in [f"area_{page_key}", f"pcat_{page_key}",
                                                    f"terms_{page_key}", f"wh_{page_key}"]):
                     del st.session_state[k]
             st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
     filters = {}
 

@@ -17,7 +17,7 @@ import numpy as np
 import os
 from datetime import datetime
 
-from components.auth import require_role, user_chip, current_role
+from components.auth import require_role, current_role
 
 require_role(allowed=["owner", "sales"])
 
@@ -36,6 +36,7 @@ from data.constants import KPI_TARGETS
 from components.charts import (
     bar_chart, horizontal_bar, donut_chart, line_bar_combo, area_chart)
 from components.formatting import format_php, format_pct, format_number
+from components.layout import GRID_WIDE_SIDEBAR
 from data.constants import CHART_COLORS
 from data.analytics import (
     compute_q1_comparison, compute_item_pairings,
@@ -68,7 +69,6 @@ filters = render_top_filters(sr, page_key="sales_intel", expand_filters=False)
 sr_f = apply_filters_sr(sr, filters)
 
 data_end = sr_f["DATE"].max().strftime("%B %d, %Y") if ("DATE" in sr_f.columns and not sr_f.empty and pd.notna(sr_f["DATE"].max())) else "N/A"
-user_chip()
 
 st.markdown('<div class="page-title">Sales Intelligence</div>', unsafe_allow_html=True)
 st.markdown('<div class="page-subtitle">Deep Analytics, Patterns & Comparisons</div>', unsafe_allow_html=True)
@@ -126,7 +126,7 @@ else:
 
     # Monthly side-by-side chart
     st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
-    m_col1, m_col2 = st.columns([2, 1])
+    m_col1, m_col2 = st.columns(GRID_WIDE_SIDEBAR)
 
     with m_col1:
         with st.container(border=True):

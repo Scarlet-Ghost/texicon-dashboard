@@ -16,7 +16,7 @@ import pandas as pd
 import numpy as np
 import os
 
-from components.auth import require_role, user_chip, current_role
+from components.auth import require_role, current_role
 
 require_role(allowed=["owner"])
 
@@ -37,6 +37,7 @@ from components.charts import (
     bar_chart, horizontal_bar, donut_chart, line_bar_combo,
     stacked_bar, treemap_chart, area_chart, add_target_line)
 from components.formatting import format_php, format_pct, format_number
+from components.layout import GRID_WIDE_SIDEBAR, GRID_NARROW_WIDE
 from data.constants import AREA_COLORS, PRODUCT_COLORS
 from datetime import datetime
 
@@ -55,7 +56,6 @@ filters = render_top_filters(sr, so, page_key="revenue", expand_filters=True)
 sr_f = apply_filters_sr(sr, filters)
 
 data_end = sr_f["DATE"].max().strftime("%B %d, %Y") if ("DATE" in sr_f.columns and not sr_f.empty and pd.notna(sr_f["DATE"].max())) else "N/A"
-user_chip()
 
 st.markdown('<div class="page-title">Revenue & Sales</div>', unsafe_allow_html=True)
 st.markdown('<div class="page-subtitle">Sales Performance, Product Mix, Customer & Geographic Analysis</div>', unsafe_allow_html=True)
@@ -114,7 +114,7 @@ if "YEAR_MONTH" in sr_f.columns:
         Net=("NET SALES", "sum"), Gross=("GROSS SALES", "sum")).sort_index().reset_index()
     monthly["Month"] = monthly["YEAR_MONTH"].dt.strftime("%b %y")
 
-    col1, col2 = st.columns([2, 1])
+    col1, col2 = st.columns(GRID_WIDE_SIDEBAR)
     with col1:
         with st.container(border=True):
             section_card_header("Revenue Trends", "Net vs Gross monthly performance", tooltip=TT["revenue_trend"])
@@ -144,7 +144,7 @@ if "ITEM" in sr_f.columns:
         f"GLYPHOTEX 480 SL alone = <strong>{glyph_pct:.1f}%</strong> ({format_php(glyph)})",
         "warning" if top5_pct > 40 else "info")
 
-col1, col2 = st.columns([1, 2])
+col1, col2 = st.columns(GRID_NARROW_WIDE)
 with col1:
     with st.container(border=True):
         section_card_header("Product Categories", "Revenue by category", tooltip=TT["product_categories"])

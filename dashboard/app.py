@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import os
-import time
 from datetime import datetime
 
 st.set_page_config(
@@ -21,7 +20,7 @@ except ModuleNotFoundError:
 st.markdown(inject_css(current_theme()), unsafe_allow_html=True)
 st.markdown(loading_overlay_html(), unsafe_allow_html=True)
 
-from components.auth import render_login, current_role, user_chip, require_role
+from components.auth import render_login, current_role, require_role
 
 # Login gate — must run before any data loads.
 if current_role() is None:
@@ -58,8 +57,7 @@ from data.analytics import compute_monthly_kpi_trends
 from data.constants import KPI_TARGETS, WAREHOUSE_LABELS
 from components.kpi_cards import (
     render_kpi_row, kpi_spec_money, kpi_spec_pct, kpi_spec_count)
-
-t0 = time.time()
+from components.layout import GRID_WIDE_SIDEBAR, GRID_BALANCED, GRID_NARROW_WIDE
 
 # --- Load & Transform ---
 sr_raw = load_sales_report()
@@ -92,12 +90,8 @@ kpi_trends = compute_monthly_kpi_trends(sr_f)
 
 # --- Empty State ---
 if sr_f.empty:
-    user_chip()
     empty_state()
     st.stop()
-
-# --- Top Bar with freshness ---
-user_chip()
 
 # --- Page Title ---
 st.markdown('<div class="page-title">Executive Dashboard</div>', unsafe_allow_html=True)
@@ -300,7 +294,7 @@ with comp_cols[4]:
 # MONTHLY REVENUE + PRODUCT MIX (in section cards)
 # ============================================
 st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
-chart_col1, chart_col2 = st.columns([2, 1])
+chart_col1, chart_col2 = st.columns(GRID_WIDE_SIDEBAR)
 
 with chart_col1:
     with st.container(border=True):
@@ -340,7 +334,7 @@ with chart_col2:
 # REVENUE CONCENTRATION + CATEGORY MIX
 # ============================================
 st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
-conc_col1, conc_col2 = st.columns([1, 1])
+conc_col1, conc_col2 = st.columns(GRID_BALANCED)
 
 with conc_col1:
     with st.container(border=True):
@@ -445,7 +439,7 @@ with op_cols[2]:
              sub_text=f"{dr_f['Warehouse'].nunique() if 'Warehouse' in dr_f.columns else 0} warehouses")
 
 st.markdown('<div class="section-gap-sm"></div>', unsafe_allow_html=True)
-wh_col1, wh_col2 = st.columns([1, 2])
+wh_col1, wh_col2 = st.columns(GRID_NARROW_WIDE)
 with wh_col1:
     if "Warehouse" in dr_f.columns:
         with st.container(border=True):
@@ -546,9 +540,5 @@ with wc2_cols[2]:
 
 # ============================================
 # SCROLL TO TOP + COMPUTE TIME
-# ============================================
-# Re-render top_bar with compute time now that everything is rendered
-_compute_ms = int((time.time() - t0) * 1000)
-st.markdown(f'<div style="text-align:right; font-size:var(--f-xs); color:var(--fg-3); margin-top:var(--s-4);">Rendered in {_compute_ms}ms</div>', unsafe_allow_html=True)
 scroll_to_top_button()
 st.markdown(hide_loading_script(), unsafe_allow_html=True)

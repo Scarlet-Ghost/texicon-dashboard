@@ -15,7 +15,7 @@ render_top_bar(active_page="Reconnect")
 import pandas as pd
 import os
 
-from components.auth import require_role, user_chip, current_role
+from components.auth import require_role, current_role
 
 require_role(allowed=["owner", "sales"])
 
@@ -71,7 +71,6 @@ if cust_df.empty:
     st.stop()
 
 data_end = sr_f["DATE"].max().strftime("%B %d, %Y") if pd.notna(sr_f["DATE"].max()) else "N/A"
-user_chip()
 
 st.markdown('<div class="page-title">Customer Reconnection</div>', unsafe_allow_html=True)
 st.markdown('<div class="page-subtitle">Identify inactive customers and prioritize re-engagement actions</div>', unsafe_allow_html=True)

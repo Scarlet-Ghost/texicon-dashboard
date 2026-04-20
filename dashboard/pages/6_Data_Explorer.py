@@ -17,7 +17,7 @@ import os
 from datetime import datetime
 from io import BytesIO
 
-from components.auth import require_role, user_chip, current_role
+from components.auth import require_role, current_role
 
 require_role(allowed=["owner"])
 
@@ -82,6 +82,7 @@ def _render_pagination(tab, total, page_size):
 
     _pagination_info(page, page_size, total)
 
+    # TODO: non-standard ratio
     p1, p2, p_mid, p3, p4 = st.columns([0.8, 0.8, 1.4, 0.8, 0.8])
     with p1:
         if st.button("First", key=f"first_{tab}", disabled=(page <= 1), use_container_width=True):
@@ -151,7 +152,6 @@ if _risks:
     global_alert_strip(_risks)
 
 data_end = sr["DATE"].max().strftime("%B %d, %Y") if ("DATE" in sr.columns and not sr.empty and pd.notna(sr["DATE"].max())) else "N/A"
-user_chip()
 
 st.markdown('<div class="page-title">Data Explorer</div>', unsafe_allow_html=True)
 st.markdown('<div class="page-subtitle">Browse, Filter & Export Raw Data</div>', unsafe_allow_html=True)

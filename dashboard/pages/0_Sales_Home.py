@@ -21,7 +21,7 @@ except ModuleNotFoundError:
 st.markdown(inject_css(current_theme()), unsafe_allow_html=True)
 render_top_bar(active_page="Sales Home")
 
-from components.auth import require_role, user_chip, current_role
+from components.auth import require_role, current_role
 
 require_role(allowed=["sales"])
 
@@ -47,7 +47,6 @@ sr = transform_sales_report(sr_raw)
 freshness_hours = get_data_freshness()
 
 now = datetime.now()
-user_chip()
 
 render_breadcrumb([("Sales Home", None)])
 

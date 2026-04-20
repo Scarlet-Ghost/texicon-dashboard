@@ -568,17 +568,12 @@ def _sparkline_svg(values, width=70, height=22, color=None, stroke_width=1.5):
 
 
 def top_bar_html(theme: str, role_label: str = "", primary_action: str = "") -> str:
-    """Topbar HTML: serif TEXICON wordmark, role chip, optional action.
+    """Legacy topbar HTML (kept for backward compatibility).
 
-    The theme toggle is NOT rendered here. render_top_bar (below) emits a
-    session-preserving st.button separately — a plain <a href="?theme=..."> in
-    the topbar HTML would reload the page and drop Streamlit's WebSocket
-    session, logging the user out.
-
-    (The ``theme`` parameter is retained for the ``.tx-toggle`` data hook so
-    existing tests and any legacy callers don't break.)
+    New chrome renders via render_top_bar() using a real Streamlit container so
+    buttons live inside the card DOM, not as CSS-hoisted overlays.
     """
-    _ = theme  # reserved for future visual treatments
+    _ = theme
     role_chip = (
         f'<span class="tx-badge muted" style="margin-right:6px;">{role_label}</span>'
         if role_label else ""
@@ -621,10 +616,9 @@ def breadcrumb_html(parts: list) -> str:
 def render_top_bar(active_page: str):
     """Streamlit wrapper: read theme + role, emit topbar + nav. Call at top of every page.
 
-    `active_page` accepts either a label ('Revenue') or page_id ('1_Revenue_Sales').
-    Nav uses st.page_link to preserve session state across navigation.
-    Theme toggle uses a hidden st.button overlaying the visual toggle — a
-    plain <a href="?theme=..."> would reload the page and drop session_state.
+    Topbar is a real st.container with columns so brand, role chip, theme
+    toggle, and logout all live inside one DOM card — no CSS-absolute
+    hoisting. CSS targets the container via `:has(.tx-brand-row)`.
     """
     import streamlit as st
     try:
@@ -636,28 +630,32 @@ def render_top_bar(active_page: str):
     role = current_role() or "owner"
     role_label = "Owner" if role == "owner" else "Sales"
     theme = current_theme()
-    st.markdown(top_bar_html(theme=theme, role_label=role_label),
-                unsafe_allow_html=True)
 
-    # Log out button — CSS-positioned into the topbar card (right side).
-    st.markdown('<div class="tx-logout-slot">', unsafe_allow_html=True)
-    if st.button("Log out", key=f"topbar_logout_{active_page}"):
-        st.session_state.clear()
-        st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+    with st.container(border=False):
+        brand_col, theme_col, logout_col = st.columns([6, 1, 1])
+        with brand_col:
+            st.markdown(
+                '<div class="tx-brand-row">'
+                '<span class="tx-brand">TEXICON<span class="tx-leaf"></span></span>'
+                f'<span class="tx-role-chip">{role_label}</span>'
+                '</div>',
+                unsafe_allow_html=True,
+            )
+        with theme_col:
+            other = "dark" if theme == "light" else "light"
+            label = "Dark" if theme == "light" else "Light"
+            if st.button(label, key=f"theme_toggle_{active_page}",
+                         use_container_width=True):
+                set_theme(other)
+                st.rerun()
+        with logout_col:
+            if st.button("Log out", key=f"topbar_logout_{active_page}",
+                         use_container_width=True):
+                st.session_state.clear()
+                st.rerun()
 
     page_id = _label_to_page_id(active_page, role)
     render_nav(active_page=page_id, risk_count=0, role=role)
-
-    # Theme toggle — fixed bottom-left FAB. Session-preserving st.button
-    # (a plain <a href="?theme="> would drop the WebSocket and log users out).
-    other = "dark" if theme == "light" else "light"
-    label = "☾ Dark" if theme == "light" else "☀ Light"
-    st.markdown('<div class="tx-theme-fab">', unsafe_allow_html=True)
-    if st.button(label, key=f"theme_toggle_{active_page}"):
-        set_theme(other)
-        st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
 
 
 def kpi_card_html(label: str, value: str, delta: str = "",

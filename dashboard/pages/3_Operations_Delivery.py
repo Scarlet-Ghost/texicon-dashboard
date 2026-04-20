@@ -17,7 +17,7 @@ import numpy as np
 import os
 from datetime import datetime
 
-from components.auth import require_role, user_chip, current_role
+from components.auth import require_role, current_role
 
 require_role(allowed=["owner"])
 
@@ -38,6 +38,7 @@ from components.charts import (
     bar_chart, horizontal_bar, donut_chart, line_bar_combo,
     stacked_bar, histogram_chart, funnel_chart)
 from components.formatting import format_php, format_pct, format_number, format_days
+from components.layout import GRID_WIDE_SIDEBAR
 
 sr_raw = load_sales_report()
 so_raw = load_sales_order()
@@ -58,7 +59,6 @@ so_f = apply_filters_so(so, filters)
 dr_f = apply_filters_dr(dr, filters)
 
 data_end = dr_f["Delivery Date"].max().strftime("%B %d, %Y") if ("Delivery Date" in dr_f.columns and not dr_f.empty and pd.notna(dr_f["Delivery Date"].max())) else "N/A"
-user_chip()
 
 st.markdown('<div class="page-title">Operations & Delivery</div>', unsafe_allow_html=True)
 st.markdown('<div class="page-subtitle">Fulfillment, Warehouse Performance & Service Levels</div>', unsafe_allow_html=True)
@@ -154,7 +154,7 @@ st.plotly_chart(_funnel_fig, use_container_width=True, config={"displayModeBar":
 # === DELIVERY TRENDS ===
 st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
 section_divider("Delivery Flow Over Time", eyebrow="STAGE 2 · DELIVERY TRENDS")
-col1, col2 = st.columns([2, 1])
+col1, col2 = st.columns(GRID_WIDE_SIDEBAR)
 
 with col1:
     with st.container(border=True):

@@ -135,8 +135,3 @@ def logout_button(key="logout_btn"):
         st.rerun()
 
 
-def user_chip():
-    """No-op. Role chip + Log out are rendered by render_top_bar() in the
-    topbar card. Kept as a stub so existing callers (app.py + pages) don't
-    need to be edited."""
-    return
