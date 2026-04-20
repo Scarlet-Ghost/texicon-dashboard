@@ -317,22 +317,53 @@ def concentration_bar(segments):
 
 def styled_table(headers, rows, title: str = "",
                  actions_html: str = "",
-                 # TODO: legacy kwargs preserved for caller compatibility — ignored
-                 green_cols=None, red_cols=None, row_classes=None, num_cols=None):
+                 green_cols=None, red_cols=None,
+                 row_classes=None, num_cols=None):
     """Render a styled table card.
 
     headers: list[str]
     rows: list[list[str]]  (already-formatted cells; HTML allowed)
     title: optional header label above the table
     actions_html: optional HTML for right-side action buttons in the header
-    green_cols, red_cols, row_classes, num_cols: legacy kwargs, currently ignored
+    green_cols: column indices whose cells get brand-green styling
+    red_cols: column indices whose cells get danger-red styling
+    num_cols: column indices that should right-align + tabular-nums (header + cells)
+    row_classes: optional list[str] — one class per row
     """
     import streamlit as st
-    head_row = "".join(f"<th>{h}</th>" for h in headers)
-    body_rows = "".join(
-        "<tr>" + "".join(f"<td>{c}</td>" for c in r) + "</tr>"
-        for r in rows
-    )
+    green_set = set(green_cols or [])
+    red_set = set(red_cols or [])
+    num_set = set(num_cols or [])
+
+    def _th(i, h):
+        style = 'text-align:right;font-variant-numeric:tabular-nums;' if i in num_set else ''
+        return f'<th style="{style}">{h}</th>' if style else f'<th>{h}</th>'
+
+    head_row = "".join(_th(i, h) for i, h in enumerate(headers))
+
+    def _td(i, c):
+        styles = []
+        if i in num_set:
+            styles.append('text-align:right')
+            styles.append('font-variant-numeric:tabular-nums')
+        if i in green_set:
+            styles.append('color:var(--brand-green)')
+            styles.append('font-weight:600')
+        elif i in red_set:
+            styles.append('color:var(--danger)')
+            styles.append('font-weight:600')
+        style_attr = f' style="{";".join(styles)}"' if styles else ''
+        return f'<td{style_attr}>{c}</td>'
+
+    body_rows_list = []
+    for ri, r in enumerate(rows):
+        cls = ""
+        if row_classes and ri < len(row_classes) and row_classes[ri]:
+            cls = f' class="{row_classes[ri]}"'
+        cells = "".join(_td(i, c) for i, c in enumerate(r))
+        body_rows_list.append(f'<tr{cls}>{cells}</tr>')
+    body_rows = "".join(body_rows_list)
+
     header_html = (
         f'<div style="padding:10px 14px;font-size:12px;font-weight:600;'
         f'border-bottom:1px solid var(--border);'
@@ -340,6 +371,7 @@ def styled_table(headers, rows, title: str = "",
         f'<span>{title}</span><div style="display:flex;gap:6px;">{actions_html}</div>'
         f'</div>'
     ) if (title or actions_html) else ""
+
     st.markdown(
         f'<div class="tx-card tx-table" style="padding:0;">'
         f'{header_html}'
