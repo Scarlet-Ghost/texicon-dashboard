@@ -273,6 +273,121 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 .tx-breadcrumb {{ font-size: 11px; color: var(--text-muted); }}
 .tx-breadcrumb b {{ color: var(--text-primary); font-weight: 500; }}
 
+/* ===== Tab anchor: kill default underline (Streamlit's a:hover specificity) ===== */
+.tx-tab, .tx-tab:hover, .tx-tab:visited, .tx-tab:active {{
+  text-decoration: none !important;
+}}
+
+/* ===== Legacy component compatibility =====
+   These classes are emitted by drawers.py legacy helpers (hero_kpi,
+   section_header, mini_card, compare_card, kpi_card, insight_card,
+   alert_banner, risk_card, all_clear_box, badge, top_bar, freshness_badge,
+   section-card, executive summary). Re-style them in the v9 language so
+   pages look correct without rewriting every helper. */
+
+/* Hero KPI (executive landing) */
+.hero-kpi {{
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-left: 3px solid var(--brand-green);
+  border-radius: 12px; padding: 18px 20px; margin: 14px 0;
+}}
+.hero-kpi-label {{ font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }}
+.hero-kpi-value {{ font-size: 36px; font-weight: 700; margin-top: 6px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--text-primary); }}
+.hero-kpi-value.critical {{ color: var(--danger); }}
+.hero-kpi-meta {{ font-size: 12px; color: var(--text-secondary); margin-top: 6px; display: flex; gap: 12px; flex-wrap: wrap; }}
+.hero-kpi-sub {{ color: var(--text-secondary); }}
+.hero-kpi-delta {{ font-weight: 600; }}
+.hero-kpi-delta.up {{ color: var(--brand-green); }}
+.hero-kpi-delta.down {{ color: var(--danger); }}
+
+/* Section headers / titles / rules */
+.section-eyebrow {{ font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 18px; }}
+.section-h2 {{ font-size: 18px; font-weight: 600; margin: 4px 0 8px; letter-spacing: -0.01em; color: var(--text-primary); }}
+.section-rule {{ display: none; }}
+.section-header {{ font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 18px 0 8px; letter-spacing: -0.01em; }}
+.section-card {{ background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin: 12px 0; }}
+.section-card-title {{ font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }}
+.section-card-subtitle {{ font-size: 11px; color: var(--text-muted); }}
+
+/* Legacy KPI card */
+.kpi-card, .kpi-card-na {{
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px; transition: transform 120ms ease, box-shadow 120ms ease;
+}}
+.kpi-card:hover {{ transform: translateY(-1px); box-shadow: var(--shadow-hover); }}
+.kpi-card.danger-glow {{ border-left: 3px solid var(--danger); }}
+.kpi-label {{ font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }}
+.kpi-value {{ font-size: 22px; font-weight: 600; margin-top: 4px; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; color: var(--text-primary); }}
+.kpi-value--na {{ color: var(--text-muted); }}
+.kpi-value.critical {{ color: var(--danger); }}
+.kpi-delta {{ font-size: 11px; margin-top: 4px; }}
+.kpi-delta.up {{ color: var(--brand-green); font-weight: 600; }}
+.kpi-delta.down {{ color: var(--danger); }}
+.kpi-delta.muted {{ color: var(--text-muted); }}
+
+/* Mini card */
+.mini-card {{ background: var(--bg-surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }}
+.mini-content {{ display: flex; flex-direction: column; gap: 2px; }}
+.mini-label {{ font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }}
+.mini-value {{ font-size: 14px; font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }}
+
+/* Compare card */
+.compare-card {{ background: var(--bg-surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }}
+.compare-label {{ font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }}
+.compare-main {{ font-size: 14px; font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }}
+.compare-arrow {{ margin: 0 6px; color: var(--text-muted); }}
+.compare-prev {{ font-size: 12px; color: var(--text-secondary); }}
+.compare-delta {{ font-size: 11px; margin-left: 6px; font-weight: 600; }}
+.compare-delta.up {{ color: var(--brand-green); }}
+.compare-delta.down {{ color: var(--danger); }}
+.compare-delta.muted {{ color: var(--text-muted); }}
+
+/* Insight + alert + risk + all-clear */
+.insight-card {{ background: var(--bg-surface); border: 1px solid var(--border); border-left: 3px solid var(--brand-green); border-radius: 10px; padding: 10px 14px; margin: 8px 0; font-size: 12px; color: var(--text-primary); }}
+.insight-info {{ border-left-color: var(--brand-green); }}
+.insight-warning {{ border-left-color: var(--brand-gold); }}
+.insight-critical {{ border-left-color: var(--danger); }}
+.alert-banner {{ background: var(--bg-surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin: 8px 0; font-size: 12px; }}
+.alert-info {{ border-left: 3px solid var(--brand-green); }}
+.alert-warning {{ border-left: 3px solid var(--brand-gold); }}
+.alert-danger {{ border-left: 3px solid var(--danger); color: var(--danger); }}
+.risk-card {{ background: var(--bg-surface); border: 1px solid var(--border); border-left: 3px solid var(--brand-gold); border-radius: 10px; padding: 12px 14px; margin: 8px 0; }}
+.risk-card.critical {{ border-left-color: var(--danger); }}
+.risk-title {{ font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }}
+.risk-desc {{ font-size: 12px; color: var(--text-secondary); line-height: 1.4; }}
+.all-clear-box {{ background: var(--bg-surface); border: 1px solid var(--border); border-left: 3px solid var(--brand-green); border-radius: 10px; padding: 12px 14px; font-size: 12px; color: var(--text-secondary); }}
+.all-clear-sub {{ color: var(--text-muted); margin-top: 2px; }}
+.risk-header {{ font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 16px 0 8px; }}
+.risk-count-badge {{ display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; background: var(--bg-page); color: var(--text-secondary); margin-left: 6px; }}
+.risk-count-badge.warning {{ background: var(--brand-gold); color: #000; }}
+.risk-count-badge.clear {{ background: rgba(45,138,62,0.10); color: var(--brand-green); border: 1px solid var(--brand-green); }}
+
+/* Legacy badge */
+.badge {{ display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; background: var(--bg-page); color: var(--text-secondary); }}
+.badge-success {{ background: rgba(45,138,62,0.10); color: var(--brand-green); border: 1px solid var(--brand-green); }}
+.badge-warning {{ background: var(--brand-gold); color: #000; }}
+.badge-danger {{ background: rgba(220,38,38,0.10); color: var(--danger); border: 1px solid var(--danger); }}
+.badge-info {{ background: var(--bg-page); color: var(--text-secondary); }}
+
+/* Top-bar (legacy data-as-of strip — small text in section above tabs if used) */
+.top-bar {{ display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); padding: 6px 0; }}
+.top-bar-left, .top-bar-right {{ display: flex; align-items: center; gap: 8px; }}
+.freshness-badge {{ display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; }}
+.freshness-fresh {{ background: rgba(45,138,62,0.10); color: var(--brand-green); }}
+.freshness-stale {{ background: var(--brand-gold); color: #000; }}
+.freshness-dot {{ width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; }}
+.top-bar-compute {{ color: var(--text-muted); }}
+
+/* Concentration bar */
+.conc-bar {{ display: flex; height: 18px; border-radius: 6px; overflow: hidden; margin: 8px 0; border: 1px solid var(--border); }}
+.conc-bar .seg {{ display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; font-weight: 600; }}
+
+/* Empty state */
+.empty-state {{ background: var(--bg-surface); border: 1px dashed var(--border); border-radius: 12px; padding: 24px; text-align: center; color: var(--text-muted); }}
+
+/* Tooltip icon */
+.tooltip-icon {{ display: inline-block; width: 14px; height: 14px; line-height: 14px; text-align: center; border-radius: 50%; background: var(--bg-subtle); color: var(--text-muted); font-size: 9px; margin-left: 6px; cursor: help; border: 1px solid var(--border); }}
+
 /* ===== Filter chips (active filter pills from filters.py) ===== */
 .filter-chips-row {{
   display: flex; flex-wrap: wrap; gap: 6px;
