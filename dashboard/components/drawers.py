@@ -315,40 +315,39 @@ def concentration_bar(segments):
     st.markdown(f'<div class="conc-bar">{parts}</div>', unsafe_allow_html=True)
 
 
-def styled_table(headers, rows, green_cols=None, red_cols=None, row_classes=None, num_cols=None):
-    """Render a styled HTML table matching dark theme.
-    num_cols: list of column indices to render as right-aligned tabular numbers."""
-    green_cols = green_cols or []
-    red_cols = red_cols or []
-    row_classes = row_classes or []
-    num_cols = num_cols or []
+def styled_table(headers, rows, title: str = "",
+                 actions_html: str = "",
+                 # TODO: legacy kwargs preserved for caller compatibility — ignored
+                 green_cols=None, red_cols=None, row_classes=None, num_cols=None):
+    """Render a styled table card.
 
-    th_parts = []
-    for i, h in enumerate(headers):
-        th_cls = ' class="num"' if i in num_cols else ""
-        th_parts.append(f"<th{th_cls}>{h}</th>")
-    th = "".join(th_parts)
-
-    tbody = ""
-    for ri, row in enumerate(rows):
-        row_cls = f' class="{row_classes[ri]}"' if ri < len(row_classes) and row_classes[ri] else ""
-        tds = ""
-        for i, cell in enumerate(row):
-            classes = []
-            if i in num_cols:
-                classes.append("num")
-            if i in red_cols:
-                classes.append("val-red")
-            elif i in green_cols:
-                classes.append("val-green")
-            cls = f' class="{" ".join(classes)}"' if classes else ""
-            tds += f"<td{cls}>{cell}</td>"
-        tbody += f"<tr{row_cls}>{tds}</tr>"
-    st.markdown(f"""
-    <table class="styled-table">
-        <thead><tr>{th}</tr></thead>
-        <tbody>{tbody}</tbody>
-    </table>""", unsafe_allow_html=True)
+    headers: list[str]
+    rows: list[list[str]]  (already-formatted cells; HTML allowed)
+    title: optional header label above the table
+    actions_html: optional HTML for right-side action buttons in the header
+    green_cols, red_cols, row_classes, num_cols: legacy kwargs, currently ignored
+    """
+    import streamlit as st
+    head_row = "".join(f"<th>{h}</th>" for h in headers)
+    body_rows = "".join(
+        "<tr>" + "".join(f"<td>{c}</td>" for c in r) + "</tr>"
+        for r in rows
+    )
+    header_html = (
+        f'<div style="padding:10px 14px;font-size:12px;font-weight:600;'
+        f'border-bottom:1px solid var(--border);'
+        f'display:flex;justify-content:space-between;align-items:center;">'
+        f'<span>{title}</span><div style="display:flex;gap:6px;">{actions_html}</div>'
+        f'</div>'
+    ) if (title or actions_html) else ""
+    st.markdown(
+        f'<div class="tx-card tx-table" style="padding:0;">'
+        f'{header_html}'
+        f'<table><thead><tr>{head_row}</tr></thead>'
+        f'<tbody>{body_rows}</tbody></table>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
 
 
 def top_bar(data_date, current_time, freshness_hours=None, compute_ms=None):
