@@ -9,6 +9,10 @@ with open(css_path) as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 st.markdown('<style>section[data-testid="stSidebar"]{display:none !important;}</style>', unsafe_allow_html=True)
 
+from components.auth import require_role, user_chip, current_role
+
+require_role(allowed=["owner", "sales"])
+
 from data.loader import load_sales_report, load_sales_order, load_delivery_report, get_data_freshness
 from data.transformer import transform_sales_report, transform_sales_order, transform_delivery_report
 from data.tooltips import INTEL as TT
@@ -38,10 +42,24 @@ sr = transform_sales_report(sr_raw)
 so = transform_sales_order(load_sales_order())
 dr = transform_delivery_report(load_delivery_report())
 
-_risks = compute_global_risks(sr, so, dr)
-render_nav(active_page="5_Sales_Intelligence", risk_count=len(_risks))
-render_breadcrumb([("Executive", "app"), ("Sales Intelligence", None)])
-if _risks:
+_role = current_role()
+if _role == "owner":
+    _risks = compute_global_risks(sr, so, dr)
+else:
+    _risks = []
+
+render_nav(
+    active_page="5_Sales_Intelligence",
+    risk_count=len(_risks),
+    role=_role,
+)
+
+if _role == "sales":
+    render_breadcrumb([("Sales Home", "0_Sales_Home"), ("Sales Intelligence", None)])
+else:
+    render_breadcrumb([("Executive", "app"), ("Sales Intelligence", None)])
+
+if _risks and _role == "owner":
     global_alert_strip(_risks)
 
 filters = render_top_filters(sr, page_key="sales_intel", expand_filters=False)
@@ -49,6 +67,7 @@ sr_f = apply_filters_sr(sr, filters)
 
 data_end = sr_f["DATE"].max().strftime("%B %d, %Y") if ("DATE" in sr_f.columns and not sr_f.empty and pd.notna(sr_f["DATE"].max())) else "N/A"
 top_bar(data_end, datetime.now().strftime("%a, %b %d, %Y  %I:%M:%S %p"), freshness_hours=get_data_freshness())
+user_chip()
 
 st.markdown('<div class="page-title">Sales Intelligence</div>', unsafe_allow_html=True)
 st.markdown('<div class="page-subtitle">Deep Analytics, Patterns & Comparisons</div>', unsafe_allow_html=True)
@@ -372,100 +391,101 @@ else:
             styled_table(["#", "Customer", "Orders", "Products", "Revenue", "Avg Order", "Span"],
                          rows, green_cols=[4], num_cols=[0, 2, 3, 4, 5, 6])
 
-# ============================================
-# SECTION 4: MARGIN & PRICING ANALYSIS
-# ============================================
-section_divider("Margin & Pricing Analysis (GP Proxy)", eyebrow="SECTION 4 · MARGIN")
+if _role == "owner":
+    # ============================================
+    # SECTION 4: MARGIN & PRICING ANALYSIS
+    # ============================================
+    section_divider("Margin & Pricing Analysis (GP Proxy)", eyebrow="SECTION 4 · MARGIN")
 
-margins = compute_margin_analysis(sr_f)
+    margins = compute_margin_analysis(sr_f)
 
-if margins is None:
-    st.info("Not enough data for margin analysis.")
-else:
-    kpi_cols = st.columns(3)
-    with kpi_cols[0]:
-        kpi_card("AVG DISCOUNT RATE", format_pct(margins["overall_discount"]),
-                 value_class="warning" if margins["overall_discount"] > 8 else "",
-                 sub_text="Across all transactions",
-                 tooltip=TT["avg_discount"])
-    with kpi_cols[1]:
-        kpi_card("AVG UNIT NET PRICE", f"\u20B1{margins['overall_unit_price']:,.0f}/L",
-                 value_class="neutral",
-                 sub_text="Net revenue per L/KG",
-                 tooltip=TT["avg_unit_price"])
-    with kpi_cols[2]:
-        risk_count = len(margins["margin_risk"]) if not margins["margin_risk"].empty else 0
-        kpi_card("MARGIN RISK ITEMS", str(risk_count),
-                 value_class="danger" if risk_count > 3 else "warning" if risk_count > 0 else "",
-                 sub_text="Price declining or discount rising",
-                 tooltip=TT["margin_risk_items"],
-                 card_class="danger-glow" if risk_count > 3 else "")
+    if margins is None:
+        st.info("Not enough data for margin analysis.")
+    else:
+        kpi_cols = st.columns(3)
+        with kpi_cols[0]:
+            kpi_card("AVG DISCOUNT RATE", format_pct(margins["overall_discount"]),
+                     value_class="warning" if margins["overall_discount"] > 8 else "",
+                     sub_text="Across all transactions",
+                     tooltip=TT["avg_discount"])
+        with kpi_cols[1]:
+            kpi_card("AVG UNIT NET PRICE", f"\u20B1{margins['overall_unit_price']:,.0f}/L",
+                     value_class="neutral",
+                     sub_text="Net revenue per L/KG",
+                     tooltip=TT["avg_unit_price"])
+        with kpi_cols[2]:
+            risk_count = len(margins["margin_risk"]) if not margins["margin_risk"].empty else 0
+            kpi_card("MARGIN RISK ITEMS", str(risk_count),
+                     value_class="danger" if risk_count > 3 else "warning" if risk_count > 0 else "",
+                     sub_text="Price declining or discount rising",
+                     tooltip=TT["margin_risk_items"],
+                     card_class="danger-glow" if risk_count > 3 else "")
 
-    # Discount by category + top discounted clients
-    st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
-    m_col1, m_col2 = st.columns(2)
-
-    with m_col1:
-        with st.container(border=True):
-            section_card_header("Discount Rate by Category", "Average discount percentage", tooltip=TT["discount_by_category"])
-            cat_df = margins["by_category"]
-            if not cat_df.empty:
-                cat_sorted = cat_df.sort_values("avg_discount", ascending=True)
-                fig = horizontal_bar(cat_sorted, x="avg_discount", y="PRODUCT CATEGORY",
-                                     x_title="Avg Discount (%)", x_currency=False)
-                fig.update_xaxes(ticksuffix="%")
-                fig.add_vline(x=KPI_TARGETS["discount_rate_max"]["value"], line_dash="dash",
-                              line_color=KPI_TARGETS["discount_rate_max"]["color"], line_width=1.5,
-                              opacity=0.7, annotation_text=KPI_TARGETS["discount_rate_max"]["label"],
-                              annotation_position="top right",
-                              annotation_font=dict(size=10, color=KPI_TARGETS["discount_rate_max"]["color"]))
-                fig.update_traces(hovertemplate="<b>%{y}</b><br>%{x:.1f}% avg discount<extra></extra>")
-                st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
-
-    with m_col2:
-        with st.container(border=True):
-            section_card_header("Top Discounted Clients", "Customers with highest avg discount", tooltip=TT["discount_by_client"])
-            cli_df = margins["by_client"]
-            if not cli_df.empty:
-                top_disc = cli_df.head(10).sort_values("avg_discount", ascending=True)
-                top_disc["CLIENT"] = top_disc["CLIENT"].str[:20]
-                fig = horizontal_bar(top_disc, x="avg_discount", y="CLIENT",
-                                     color_seq=["#F26D6D"],
-                                     x_title="Avg Discount (%)", x_currency=False)
-                fig.update_xaxes(ticksuffix="%")
-                fig.update_traces(hovertemplate="<b>%{y}</b><br>%{x:.1f}% avg discount<extra></extra>")
-                st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
-
-    # Price erosion table
-    pe = margins["price_erosion"]
-    if not pe.empty:
+        # Discount by category + top discounted clients
         st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
-        declining = pe[pe["price_change_pct"] < 0].head(15)
-        if not declining.empty:
-            with st.container(border=True):
-                section_card_header("Price Erosion Watch", "Items with declining unit net price Q1'25 \u2192 Q1'26", tooltip=TT["price_erosion"])
-                rows = []
-                for _, r in declining.iterrows():
-                    rows.append([
-                        str(r["ITEM"])[:30],
-                        f"\u20B1{r['price_2025']:,.0f}",
-                        f"\u20B1{r['price_2026']:,.0f}",
-                        f"{r['price_change_pct']:+.1f}%",
-                        format_php(r.get("revenue_2025", 0)),
-                        format_php(r.get("revenue_2026", 0)),
-                    ])
-                styled_table(["Item", "Price Q1'25", "Price Q1'26", "Change", "Rev Q1'25", "Rev Q1'26"],
-                             rows, red_cols=[3], num_cols=[1, 2, 3, 4, 5])
+        m_col1, m_col2 = st.columns(2)
 
-    # Margin risks
-    mr = margins["margin_risk"]
-    if not mr.empty:
-        for _, r in mr.head(3).iterrows():
-            insight_card(
-                f"<strong>{r['ITEM'][:30]}</strong>: unit price {r['price_change_pct']:+.1f}%, "
-                f"discount moved {r['discount_change']:+.1f}pp "
-                f"(Q1'25 \u20B1{r['price_2025']:,.0f}/L \u2192 Q1'26 \u20B1{r['price_2026']:,.0f}/L)",
-                "warning")
+        with m_col1:
+            with st.container(border=True):
+                section_card_header("Discount Rate by Category", "Average discount percentage", tooltip=TT["discount_by_category"])
+                cat_df = margins["by_category"]
+                if not cat_df.empty:
+                    cat_sorted = cat_df.sort_values("avg_discount", ascending=True)
+                    fig = horizontal_bar(cat_sorted, x="avg_discount", y="PRODUCT CATEGORY",
+                                         x_title="Avg Discount (%)", x_currency=False)
+                    fig.update_xaxes(ticksuffix="%")
+                    fig.add_vline(x=KPI_TARGETS["discount_rate_max"]["value"], line_dash="dash",
+                                  line_color=KPI_TARGETS["discount_rate_max"]["color"], line_width=1.5,
+                                  opacity=0.7, annotation_text=KPI_TARGETS["discount_rate_max"]["label"],
+                                  annotation_position="top right",
+                                  annotation_font=dict(size=10, color=KPI_TARGETS["discount_rate_max"]["color"]))
+                    fig.update_traces(hovertemplate="<b>%{y}</b><br>%{x:.1f}% avg discount<extra></extra>")
+                    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+
+        with m_col2:
+            with st.container(border=True):
+                section_card_header("Top Discounted Clients", "Customers with highest avg discount", tooltip=TT["discount_by_client"])
+                cli_df = margins["by_client"]
+                if not cli_df.empty:
+                    top_disc = cli_df.head(10).sort_values("avg_discount", ascending=True)
+                    top_disc["CLIENT"] = top_disc["CLIENT"].str[:20]
+                    fig = horizontal_bar(top_disc, x="avg_discount", y="CLIENT",
+                                         color_seq=["#F26D6D"],
+                                         x_title="Avg Discount (%)", x_currency=False)
+                    fig.update_xaxes(ticksuffix="%")
+                    fig.update_traces(hovertemplate="<b>%{y}</b><br>%{x:.1f}% avg discount<extra></extra>")
+                    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+
+        # Price erosion table
+        pe = margins["price_erosion"]
+        if not pe.empty:
+            st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
+            declining = pe[pe["price_change_pct"] < 0].head(15)
+            if not declining.empty:
+                with st.container(border=True):
+                    section_card_header("Price Erosion Watch", "Items with declining unit net price Q1'25 \u2192 Q1'26", tooltip=TT["price_erosion"])
+                    rows = []
+                    for _, r in declining.iterrows():
+                        rows.append([
+                            str(r["ITEM"])[:30],
+                            f"\u20B1{r['price_2025']:,.0f}",
+                            f"\u20B1{r['price_2026']:,.0f}",
+                            f"{r['price_change_pct']:+.1f}%",
+                            format_php(r.get("revenue_2025", 0)),
+                            format_php(r.get("revenue_2026", 0)),
+                        ])
+                    styled_table(["Item", "Price Q1'25", "Price Q1'26", "Change", "Rev Q1'25", "Rev Q1'26"],
+                                 rows, red_cols=[3], num_cols=[1, 2, 3, 4, 5])
+
+        # Margin risks
+        mr = margins["margin_risk"]
+        if not mr.empty:
+            for _, r in mr.head(3).iterrows():
+                insight_card(
+                    f"<strong>{r['ITEM'][:30]}</strong>: unit price {r['price_change_pct']:+.1f}%, "
+                    f"discount moved {r['discount_change']:+.1f}pp "
+                    f"(Q1'25 \u20B1{r['price_2025']:,.0f}/L \u2192 Q1'26 \u20B1{r['price_2026']:,.0f}/L)",
+                    "warning")
 
 # ============================================
 # SECTION 5: GRANULAR DATE BREAKDOWN
