@@ -225,12 +225,42 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 [data-testid="stButton"] > button:hover {{ background: var(--bg-subtle) !important; }}
 [data-testid="stButton"] > button:focus {{ box-shadow: var(--focus-ring) !important; outline: none !important; }}
 
+/* ===== Form submit (primary) — use brand gold instead of Streamlit's default ===== */
+[data-testid="stFormSubmitButton"] > button,
+[data-testid="stButton"] > button[kind="primary"],
+[data-testid="stFormSubmitButton"] > button[kind="primary"] {{
+  background: var(--btn-primary-bg) !important;
+  color: var(--btn-primary-fg) !important;
+  border: 1px solid var(--btn-primary-bg) !important;
+  font-weight: 600 !important;
+}}
+[data-testid="stFormSubmitButton"] > button:hover,
+[data-testid="stFormSubmitButton"] > button[kind="primary"]:hover,
+[data-testid="stButton"] > button[kind="primary"]:hover {{
+  background: var(--btn-primary-hover) !important;
+  border-color: var(--btn-primary-hover) !important;
+}}
+/* Hide the "Press Enter to submit form" caption */
+[data-testid="InputInstructions"] {{ display: none !important; }}
+
 /* ===== Inputs ===== */
 [data-baseweb="input"] input, [data-baseweb="select"] {{
   background: var(--bg-surface) !important; color: var(--text-primary) !important;
+  border-radius: 8px !important; font-size: 13px !important;
+}}
+[data-baseweb="input"] {{
+  border-color: var(--border-input) !important;
   border-radius: 8px !important;
 }}
-[data-baseweb="input"] {{ border-color: var(--border-input) !important; }}
+[data-baseweb="input"] input::placeholder,
+[data-baseweb="textarea"] textarea::placeholder {{
+  color: var(--text-secondary) !important; opacity: 0.8 !important;
+}}
+/* Password show/hide eye button — neutral chrome */
+[data-baseweb="input"] button {{
+  background: transparent !important; border: none !important;
+  color: var(--text-secondary) !important;
+}}
 
 /* ===== Badges ===== */
 .tx-badge {{ display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; }}
