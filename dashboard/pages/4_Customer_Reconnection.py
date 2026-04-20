@@ -1,11 +1,19 @@
 import streamlit as st
+st.set_page_config(page_title="Customer Reconnection — Texicon", layout="wide",
+                   initial_sidebar_state="collapsed")
+
+try:
+    from components.theme import inject_css, current_theme
+    from components.drawers import render_top_bar
+except ModuleNotFoundError:
+    from dashboard.components.theme import inject_css, current_theme
+    from dashboard.components.drawers import render_top_bar
+
+st.markdown(inject_css(current_theme()), unsafe_allow_html=True)
+render_top_bar(active_page="Reconnect")
+
 import pandas as pd
 import os
-
-css_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "style.css")
-with open(css_path) as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-st.markdown('<style>section[data-testid="stSidebar"]{display:none !important;}</style>', unsafe_allow_html=True)
 
 from components.auth import require_role, user_chip, current_role
 
@@ -42,12 +50,6 @@ if _role == "owner":
 else:
     _risks = []
 
-render_nav(
-    active_page="4_Customer_Reconnection",
-    risk_count=len(_risks),
-    role=_role,
-)
-
 if _role == "sales":
     render_breadcrumb([("Sales Home", "0_Sales_Home"), ("Customer Reconnection", None)])
 else:
@@ -69,7 +71,6 @@ if cust_df.empty:
     st.stop()
 
 data_end = sr_f["DATE"].max().strftime("%B %d, %Y") if pd.notna(sr_f["DATE"].max()) else "N/A"
-top_bar(data_end, datetime.now().strftime("%a, %b %d, %Y  %I:%M:%S %p"), freshness_hours=get_data_freshness())
 user_chip()
 
 st.markdown('<div class="page-title">Customer Reconnection</div>', unsafe_allow_html=True)
