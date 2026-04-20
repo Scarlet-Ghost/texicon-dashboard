@@ -1,13 +1,21 @@
 import streamlit as st
+st.set_page_config(page_title="Operations & Delivery — Texicon", layout="wide",
+                   initial_sidebar_state="collapsed")
+
+try:
+    from components.theme import inject_css, current_theme
+    from components.drawers import render_top_bar
+except ModuleNotFoundError:
+    from dashboard.components.theme import inject_css, current_theme
+    from dashboard.components.drawers import render_top_bar
+
+st.markdown(inject_css(current_theme()), unsafe_allow_html=True)
+render_top_bar(active_page="Operations")
+
 import pandas as pd
 import numpy as np
 import os
 from datetime import datetime
-
-css_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "style.css")
-with open(css_path) as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-st.markdown('<style>section[data-testid="stSidebar"]{display:none !important;}</style>', unsafe_allow_html=True)
 
 from components.auth import require_role, user_chip, current_role
 
@@ -39,7 +47,6 @@ so = transform_sales_order(so_raw)
 dr = transform_delivery_report(dr_raw)
 
 _risks = compute_global_risks(sr, so, dr)
-render_nav(active_page="3_Operations_Delivery", risk_count=len(_risks), role=current_role())
 render_breadcrumb([("Executive", "app"), ("Operations & Delivery", None)])
 
 if _risks:
@@ -51,7 +58,6 @@ so_f = apply_filters_so(so, filters)
 dr_f = apply_filters_dr(dr, filters)
 
 data_end = dr_f["Delivery Date"].max().strftime("%B %d, %Y") if ("Delivery Date" in dr_f.columns and not dr_f.empty and pd.notna(dr_f["Delivery Date"].max())) else "N/A"
-top_bar(data_end, datetime.now().strftime("%a, %b %d, %Y  %I:%M:%S %p"), freshness_hours=get_data_freshness())
 user_chip()
 
 st.markdown('<div class="page-title">Operations & Delivery</div>', unsafe_allow_html=True)
