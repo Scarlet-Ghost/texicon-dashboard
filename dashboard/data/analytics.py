@@ -665,3 +665,111 @@ def compute_daily_breakdown(sr_df):
         "peaks": peaks,
         "dow_pattern": dow,
     }
+
+
+# ---- Sales Home helpers ----
+# Exposed for pages/0_Sales_Home.py. All helpers accept the transformed
+# sales-report dataframe (`sr`) and return pure-python / pandas results.
+# No cost/margin columns referenced.
+
+
+def _resolve_columns(sr):
+    """Return (customer_col, item_col, date_col, revenue_col) by best-match.
+
+    Falls back to the first column whose lowercase name contains the keyword.
+    Raises KeyError if no plausible column is found.
+    """
+    def pick(keywords):
+        for col in sr.columns:
+            lc = col.lower()
+            if any(k in lc for k in keywords):
+                return col
+        raise KeyError(f"No column matching {keywords} in {list(sr.columns)}")
+
+    customer_col = pick(["client", "customer"])
+    # Prefer the bare "ITEM" column over "ITEM CODE" by checking exact match first
+    item_col = next(
+        (col for col in sr.columns if col.upper() == "ITEM"),
+        None,
+    ) or pick(["item", "product", "sku"])
+    # Prefer the parsed "DATE" column over raw "SI. DATE"
+    date_col = next(
+        (col for col in sr.columns if col.upper() == "DATE"),
+        None,
+    ) or pick(["date", "txn_date", "transaction"])
+    revenue_col = pick(["net sales", "revenue", "total", "amount"])
+    return customer_col, item_col, date_col, revenue_col
+
+
+def get_active_customers_this_month(sr, today=None):
+    """Distinct customer count with at least one transaction in the current month."""
+    if sr is None or len(sr) == 0:
+        return 0
+    today = today or pd.Timestamp.today()
+    customer_col, _, date_col, _ = _resolve_columns(sr)
+    mask = (
+        (sr[date_col].dt.year == today.year)
+        & (sr[date_col].dt.month == today.month)
+    )
+    return int(sr.loc[mask, customer_col].nunique())
+
+
+def get_new_customers_this_month(sr, today=None):
+    """Customers whose first-ever order falls in the current month."""
+    if sr is None or len(sr) == 0:
+        return 0
+    today = today or pd.Timestamp.today()
+    customer_col, _, date_col, _ = _resolve_columns(sr)
+    first_order = sr.groupby(customer_col)[date_col].min()
+    mask = (first_order.dt.year == today.year) & (first_order.dt.month == today.month)
+    return int(mask.sum())
+
+
+def get_top_customers_ytd(sr, n=10, today=None):
+    """Top N customers by YTD revenue. Returns DataFrame with columns:
+    customer, revenue, orders, last_order_date.
+    """
+    if sr is None or len(sr) == 0:
+        return pd.DataFrame(columns=["customer", "revenue", "orders", "last_order_date"])
+    today = today or pd.Timestamp.today()
+    customer_col, _, date_col, revenue_col = _resolve_columns(sr)
+    ytd = sr[sr[date_col].dt.year == today.year]
+    if ytd.empty:
+        return pd.DataFrame(columns=["customer", "revenue", "orders", "last_order_date"])
+    agg = ytd.groupby(customer_col).agg(
+        revenue=(revenue_col, "sum"),
+        orders=(date_col, "count"),
+        last_order_date=(date_col, "max"),
+    ).reset_index().rename(columns={customer_col: "customer"})
+    return agg.sort_values("revenue", ascending=False).head(n).reset_index(drop=True)
+
+
+def get_top_items_ytd(sr, n=10, today=None):
+    """Top N items by YTD revenue. Returns DataFrame with columns:
+    item, revenue, qty (if a qty column exists, else omitted).
+    """
+    if sr is None or len(sr) == 0:
+        return pd.DataFrame(columns=["item", "revenue"])
+    today = today or pd.Timestamp.today()
+    _, item_col, date_col, revenue_col = _resolve_columns(sr)
+    ytd = sr[sr[date_col].dt.year == today.year]
+    if ytd.empty:
+        return pd.DataFrame(columns=["item", "revenue"])
+
+    qty_col = None
+    for col in sr.columns:
+        lc = col.lower()
+        if "qty" in lc or "quantity" in lc or lc == "units":
+            qty_col = col
+            break
+
+    if qty_col is not None:
+        agg = ytd.groupby(item_col).agg(
+            revenue=(revenue_col, "sum"),
+            qty=(qty_col, "sum"),
+        ).reset_index().rename(columns={item_col: "item"})
+    else:
+        agg = ytd.groupby(item_col).agg(
+            revenue=(revenue_col, "sum"),
+        ).reset_index().rename(columns={item_col: "item"})
+    return agg.sort_values("revenue", ascending=False).head(n).reset_index(drop=True)
