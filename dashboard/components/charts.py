@@ -7,6 +7,32 @@ from data.constants import (
     TEXT_PRIMARY, TEXT_SECONDARY, PHP_TICK_FORMAT, PHP_TICK_PREFIX,
 )
 
+try:
+    from components.theme import get_theme, current_theme
+except ModuleNotFoundError:
+    from dashboard.components.theme import get_theme, current_theme
+
+_BRAND_PALETTE = ["#2d8a3e", "#FFC907", "#000000", "#888888",
+                  "#1a5d27", "#9a7100", "#dc2626"]
+
+
+def apply_theme(fig, mode=None):
+    """Apply current theme template + brand palette to a Plotly figure."""
+    mode = mode or current_theme()
+    t = get_theme(mode)
+    fig.update_layout(
+        template=t["_plotly_template"],
+        font=dict(family="-apple-system, Inter, system-ui",
+                  size=11, color=t["text_primary"]),
+        paper_bgcolor=t["bg_surface"],
+        plot_bgcolor=t["bg_surface"],
+        colorway=_BRAND_PALETTE,
+        margin=dict(l=10, r=10, t=30, b=10),
+    )
+    fig.update_xaxes(gridcolor=t["border"], linecolor=t["border"], zeroline=False)
+    fig.update_yaxes(gridcolor=t["border"], linecolor=t["border"], zeroline=False)
+    return fig
+
 
 def _layout(**overrides):
     layout = copy.deepcopy(PLOTLY_LAYOUT)
@@ -56,7 +82,7 @@ def bar_chart(df, x, y, color=None, color_map=None, orientation="v", barmode="gr
         _apply_axes(fig, x_title=x_title, y_title=y_title, y_currency=y_currency)
     else:
         _apply_axes(fig, x_title=x_title, y_title=y_title, x_currency=y_currency)
-    return fig
+    return apply_theme(fig)
 
 
 def horizontal_bar(df, x, y, color_seq=None, height=None, x_title=None, y_title=None,
@@ -87,7 +113,7 @@ def horizontal_bar(df, x, y, color_seq=None, height=None, x_title=None, y_title=
         trace_kwargs["cliponaxis"] = False
     fig.update_traces(**trace_kwargs)
     _apply_axes(fig, x_title=x_title, y_title=y_title, x_currency=x_currency)
-    return fig
+    return apply_theme(fig)
 
 
 def donut_chart(labels, values, colors=None, height=300, center_text=None, label_map=None):
@@ -123,7 +149,7 @@ def donut_chart(labels, values, colors=None, height=300, center_text=None, label
 
     fig.update_layout(**_layout(height=height, showlegend=True, legend=legend,
                                 margin=dict(l=10, r=10, t=20, b=20)))
-    return fig
+    return apply_theme(fig)
 
 
 def line_bar_combo(df, x, bar_y, line_y, bar_name="", line_name="", height=320,
@@ -163,7 +189,7 @@ def line_bar_combo(df, x, bar_y, line_y, bar_name="", line_name="", height=320,
             tickformat=(PHP_TICK_FORMAT if line_currency else ",d"),
             tickprefix=(PHP_TICK_PREFIX if line_currency else ""),
         ))
-    return fig
+    return apply_theme(fig)
 
 
 def stacked_bar(df, x, y, color, color_map=None, height=320,
@@ -181,7 +207,7 @@ def stacked_bar(df, x, y, color, color_map=None, height=320,
         hovertemplate="<b>%{x}</b><br>%{fullData.name}: " + PHP_SYMBOL + "%{y:,.0f}<extra></extra>",
     )
     _apply_axes(fig, x_title=x_title, y_title=y_title, y_currency=y_currency)
-    return fig
+    return apply_theme(fig)
 
 
 def area_chart(df, x, y_cols, colors=None, height=320,
@@ -199,7 +225,7 @@ def area_chart(df, x, y_cols, colors=None, height=320,
         ))
     fig.update_layout(**_layout(height=height))
     _apply_axes(fig, x_title=x_title, y_title=y_title, y_currency=y_currency)
-    return fig
+    return apply_theme(fig)
 
 
 def treemap_chart(df, path, values, color=None, height=400):
@@ -211,7 +237,7 @@ def treemap_chart(df, path, values, color=None, height=400):
         hovertemplate="<b>%{label}</b><br>" + PHP_SYMBOL + "%{value:,.0f}<br>%{percentParent:.1%} of parent<extra></extra>",
         marker=dict(cornerradius=4),
     )
-    return fig
+    return apply_theme(fig)
 
 
 def funnel_chart(stages, values, height=300):
@@ -225,7 +251,7 @@ def funnel_chart(stages, values, height=300):
         hovertemplate="<b>%{y}</b><br>" + PHP_SYMBOL + "%{x:,.0f}<br>%{percentInitial} of booked<extra></extra>",
     ))
     fig.update_layout(**_layout(height=height))
-    return fig
+    return apply_theme(fig)
 
 
 def histogram_chart(df, x, nbins=30, height=320, x_title=None, y_title="Count"):
