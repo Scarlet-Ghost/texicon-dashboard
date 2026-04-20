@@ -128,21 +128,21 @@ _booked_pct = 100.0
 _delivered_pct = (total_delivered / total_bookings * 100) if total_bookings > 0 else 0
 _invoiced_pct = (total_net / total_bookings * 100) if total_bookings > 0 else 0
 st.markdown(
-    f'''<div style="display:flex; gap:var(--s-5); margin-bottom:var(--s-4); padding: var(--s-3) 0;">
-        <div style="flex:1;">
-            <div style="font-size:var(--f-xs); color:var(--fg-2); text-transform:uppercase; letter-spacing:0.06em; font-weight:500;">BOOKED</div>
-            <div style="font-size:22px; font-weight:600; color:var(--fg-0); letter-spacing:-0.02em; margin-top:4px;">{format_php(total_bookings)}</div>
-            <div style="font-size:var(--f-sm); color:var(--fg-2); margin-top:2px;">{_booked_pct:.0f}% of bookings</div>
+    f'''<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px;">
+        <div class="kpi-card">
+            <div class="kpi-label">BOOKED</div>
+            <div class="kpi-value">{format_php(total_bookings)}</div>
+            <div class="kpi-delta muted">{_booked_pct:.0f}% of bookings</div>
         </div>
-        <div style="flex:1;">
-            <div style="font-size:var(--f-xs); color:var(--fg-2); text-transform:uppercase; letter-spacing:0.06em; font-weight:500;">DELIVERED</div>
-            <div style="font-size:22px; font-weight:600; color:var(--fg-0); letter-spacing:-0.02em; margin-top:4px;">{format_php(total_delivered)}</div>
-            <div style="font-size:var(--f-sm); color:var(--fg-2); margin-top:2px;">{_delivered_pct:.1f}% fulfilled</div>
+        <div class="kpi-card">
+            <div class="kpi-label">DELIVERED</div>
+            <div class="kpi-value">{format_php(total_delivered)}</div>
+            <div class="kpi-delta muted">{_delivered_pct:.1f}% fulfilled</div>
         </div>
-        <div style="flex:1;">
-            <div style="font-size:var(--f-xs); color:var(--accent); text-transform:uppercase; letter-spacing:0.06em; font-weight:500;">INVOICED</div>
-            <div style="font-size:22px; font-weight:600; color:var(--accent); letter-spacing:-0.02em; margin-top:4px;">{format_php(total_net)}</div>
-            <div style="font-size:var(--f-sm); color:var(--fg-2); margin-top:2px;">{_invoiced_pct:.1f}% of bookings</div>
+        <div class="kpi-card">
+            <div class="kpi-label">INVOICED</div>
+            <div class="kpi-value">{format_php(total_net)}</div>
+            <div class="kpi-delta muted">{_invoiced_pct:.1f}% of bookings</div>
         </div>
     </div>''',
     unsafe_allow_html=True,

@@ -144,7 +144,8 @@ with chart_col1:
             seg_colors.append(RECON_COLORS[seg])
         fig = donut_chart(
             seg_labels, seg_values, colors=seg_colors,
-            center_text=str(total))
+            center_text=str(total),
+            value_is_currency=False, unit_label="customers")
         st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
 with chart_col2:

@@ -116,12 +116,24 @@ def horizontal_bar(df, x, y, color_seq=None, height=None, x_title=None, y_title=
     return apply_theme(fig)
 
 
-def donut_chart(labels, values, colors=None, height=300, center_text=None, label_map=None):
+def donut_chart(labels, values, colors=None, height=300, center_text=None,
+                label_map=None, value_is_currency=True, unit_label=""):
+    """Donut chart.
+
+    value_is_currency: when False, hover shows raw count instead of ₱ prefix.
+    unit_label: optional suffix appended after the count (e.g. "customers").
+    """
     if label_map:
         labels = [label_map.get(l, l) for l in labels]
     n = len(labels)
     total = sum(values) if values else 1
     text_positions = ["inside" if (v / total) >= 0.08 else "outside" for v in values] if total > 0 else ["outside"] * n
+
+    if value_is_currency:
+        hover = "<b>%{label}</b><br>" + PHP_SYMBOL + "%{value:,.0f}<br>%{percent}<extra></extra>"
+    else:
+        suffix = (" " + unit_label) if unit_label else ""
+        hover = "<b>%{label}</b><br>%{value:,.0f}" + suffix + "<br>%{percent}<extra></extra>"
 
     fig = go.Figure(go.Pie(
         labels=labels, values=values, hole=0.65,
@@ -130,13 +142,14 @@ def donut_chart(labels, values, colors=None, height=300, center_text=None, label
         textposition=text_positions,
         textfont=dict(size=11, color="#FFFFFF"),
         insidetextorientation="radial",
-        hovertemplate="<b>%{label}</b><br>" + PHP_SYMBOL + "%{value:,.0f}<br>%{percent}<extra></extra>",
+        hovertemplate=hover,
         pull=[0.015] * n,
         sort=False,
     ))
     if center_text:
-        fig.add_annotation(text=center_text, x=0.5, y=0.5,
-                           font=dict(size=17, color=TEXT_PRIMARY, family="Inter"),
+        # Neutral dark — renders on both light and dark card backgrounds.
+        fig.add_annotation(text=f"<b>{center_text}</b>", x=0.5, y=0.5,
+                           font=dict(size=22, color="#222222", family="Inter"),
                            showarrow=False, xref="paper", yref="paper")
 
     # Legend side for 4+ segments, top for fewer
