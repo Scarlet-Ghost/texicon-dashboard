@@ -1,12 +1,20 @@
 import streamlit as st
+st.set_page_config(page_title="Revenue & Sales — Texicon", layout="wide",
+                   initial_sidebar_state="collapsed")
+
+try:
+    from components.theme import inject_css, current_theme
+    from components.drawers import render_top_bar
+except ModuleNotFoundError:
+    from dashboard.components.theme import inject_css, current_theme
+    from dashboard.components.drawers import render_top_bar
+
+st.markdown(inject_css(current_theme()), unsafe_allow_html=True)
+render_top_bar(active_page="Revenue")
+
 import pandas as pd
 import numpy as np
 import os
-
-css_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "style.css")
-with open(css_path) as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-st.markdown('<style>section[data-testid="stSidebar"]{display:none !important;}</style>', unsafe_allow_html=True)
 
 from components.auth import require_role, user_chip, current_role
 
@@ -40,7 +48,6 @@ so = transform_sales_order(so_raw)
 dr = transform_delivery_report(dr_raw)
 
 _risks = compute_global_risks(sr, so, dr)
-render_nav(active_page="1_Revenue_Sales", risk_count=len(_risks), role=current_role())
 render_breadcrumb([("Executive", "app"), ("Revenue & Sales", None)])
 if _risks:
     global_alert_strip(_risks)
@@ -48,7 +55,6 @@ filters = render_top_filters(sr, so, page_key="revenue", expand_filters=True)
 sr_f = apply_filters_sr(sr, filters)
 
 data_end = sr_f["DATE"].max().strftime("%B %d, %Y") if ("DATE" in sr_f.columns and not sr_f.empty and pd.notna(sr_f["DATE"].max())) else "N/A"
-top_bar(data_end, datetime.now().strftime("%a, %b %d, %Y  %I:%M:%S %p"), freshness_hours=get_data_freshness())
 user_chip()
 
 st.markdown('<div class="page-title">Revenue & Sales</div>', unsafe_allow_html=True)
