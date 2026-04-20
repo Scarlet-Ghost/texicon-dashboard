@@ -58,7 +58,10 @@ def _check_password(entered, stored):
 
 def render_login():
     """Render the centered-card login. Must run when role is unset."""
-    from dashboard.components.theme import inject_css, current_theme
+    try:
+        from components.theme import inject_css, current_theme
+    except ModuleNotFoundError:
+        from dashboard.components.theme import inject_css, current_theme
     import streamlit as st
 
     st.markdown(inject_css(current_theme()), unsafe_allow_html=True)

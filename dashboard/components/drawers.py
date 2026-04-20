@@ -637,8 +637,12 @@ def breadcrumb_html(parts: list) -> str:
 def render_top_bar(active_page: str):
     """Streamlit wrapper: read theme + role, emit topbar + nav. Call at top of every page."""
     import streamlit as st
-    from dashboard.components.theme import current_theme
-    from dashboard.components.auth import current_role
+    try:
+        from components.theme import current_theme
+        from components.auth import current_role
+    except ModuleNotFoundError:
+        from dashboard.components.theme import current_theme
+        from dashboard.components.auth import current_role
     role = current_role() or "owner"
     role_label = "Owner" if role == "owner" else "Sales"
     theme = current_theme()
@@ -658,7 +662,10 @@ def kpi_card_html(label: str, value: str, delta: str = "",
     delta_dir: 'up' | 'down' | 'neutral'
     numeric_target: if provided, animate count-up; otherwise render value as-is.
     """
-    from dashboard.components.motion import count_up_value
+    try:
+        from components.motion import count_up_value
+    except ModuleNotFoundError:
+        from dashboard.components.motion import count_up_value
     cls_extra = " hero" if variant == "hero" else (" warn" if variant == "warn" else "")
     if numeric_target is not None:
         val_html = count_up_value(label, value, numeric_target, prefix, suffix)
