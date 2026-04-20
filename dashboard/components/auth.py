@@ -71,20 +71,14 @@ def render_login():
         )
         st.stop()
 
-    st.markdown(
-        '<div class="tx-login-bg">'
-        '<div class="tx-login-panel">'
-        '<div class="tx-brand" style="justify-content:center;font-size:22px;margin-bottom:6px;">'
-        'TEXICON<span class="tx-leaf"></span></div>'
-        '<div style="font-size:12px;color:var(--text-muted);margin-bottom:20px;">'
-        'Sign in to continue</div>'
-        '</div></div>',
-        unsafe_allow_html=True,
-    )
-
-    # Form sits in a centered narrow column so it lines up with the panel.
-    _, mid, _ = st.columns([1, 2, 1])
+    # Center the form in a narrow column; brand + subtitle sit above the form card.
+    _, mid, _ = st.columns([1, 1.4, 1])
     with mid:
+        st.markdown(
+            '<div class="tx-login-title">TEXICON<span class="tx-leaf"></span></div>'
+            '<div class="tx-login-sub">Sign in to continue</div>',
+            unsafe_allow_html=True,
+        )
         with st.form("login_form", clear_on_submit=False):
             email = st.text_input("Email", placeholder="you@texicon.com",
                                   label_visibility="collapsed")

@@ -259,20 +259,32 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 .filter-chip:hover {{ background: rgba(45,138,62,0.18); }}
 
 /* ===== Login screen ===== */
-.tx-login-bg {{ background: var(--bg-page); padding: 60px 0; min-height: 70vh; display: flex; align-items: center; justify-content: center; }}
-.tx-login-panel {{
-  width: 100%; max-width: 320px; background: var(--bg-surface);
-  border: 1px solid var(--border); border-radius: 14px;
-  padding: 32px 28px; text-align: center;
+/* Streamlit renders st.form as [data-testid="stForm"]; style it as the card panel. */
+[data-testid="stForm"] {{
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 22px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+}}
+.tx-login-title {{
+  text-align: center; font-family: var(--font-serif); font-weight: 700;
+  font-size: 26px; letter-spacing: 0.02em; margin: 40px 0 6px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}}
+.tx-login-sub {{
+  text-align: center; font-size: 12px; color: var(--text-muted);
+  margin-bottom: 20px;
 }}
 
 /* ===== Loading screen ===== */
 .tx-loading-overlay {{
   position: fixed; inset: 0; background: var(--bg-page); z-index: 9999;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  animation: tx-fade-in 200ms ease;
+  animation: tx-fade-in 200ms ease, tx-loading-autohide 300ms ease 900ms forwards;
+  pointer-events: none;
 }}
+@keyframes tx-loading-autohide {{ to {{ opacity: 0; visibility: hidden; }} }}
 .tx-loading-bar {{
   width: 240px; height: 2px; background: var(--bg-subtle); border-radius: 99px;
   margin-top: 24px; overflow: hidden; position: relative;
