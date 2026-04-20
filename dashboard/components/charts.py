@@ -116,7 +116,7 @@ def horizontal_bar(df, x, y, color_seq=None, height=None, x_title=None, y_title=
     return apply_theme(fig)
 
 
-def donut_chart(labels, values, colors=None, height=300, center_text=None,
+def donut_chart(labels, values, colors=None, height=320, center_text=None,
                 label_map=None, value_is_currency=True, unit_label=""):
     """Donut chart.
 
@@ -146,18 +146,29 @@ def donut_chart(labels, values, colors=None, height=300, center_text=None,
         pull=[0.015] * n,
         sort=False,
     ))
+    # Tighten the pie domain so the donut itself occupies a wide, central band
+    # of the card regardless of legend placement.
+    fig.update_traces(domain=dict(x=[0.15, 0.85], y=[0.1, 0.95]))
+
     if center_text:
-        # Neutral dark — renders on both light and dark card backgrounds.
         fig.add_annotation(text=f"<b>{center_text}</b>", x=0.5, y=0.5,
-                           font=dict(size=22, color="#222222", family="Inter"),
+                           font=dict(size=20, color="#6B7280", family="Inter"),
                            showarrow=False, xref="paper", yref="paper")
 
-    # Legend side for 4+ segments, top for fewer
-    if n >= 4:
-        legend = dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.02,
-                      font=dict(size=11, color=TEXT_SECONDARY))
+    # Legend placement: stay below the donut regardless of count so the donut
+    # keeps the full card width. For many categories, grow the chart so the
+    # wrapped legend has room.
+    if n >= 5:
+        # Many categories: legend below, wrap horizontally so donut stays wide
+        legend = dict(orientation="h", yanchor="top", y=-0.05,
+                      xanchor="center", x=0.5,
+                      font=dict(size=11, color=TEXT_SECONDARY),
+                      itemwidth=60)
+        # Grow chart so both donut and wrapped legend fit
+        height = max(height, 380)
     else:
-        legend = dict(orientation="h", yanchor="bottom", y=-0.15, xanchor="center", x=0.5,
+        legend = dict(orientation="h", yanchor="bottom", y=-0.15,
+                      xanchor="center", x=0.5,
                       font=dict(size=11, color=TEXT_SECONDARY))
 
     fig.update_layout(**_layout(height=height, showlegend=True, legend=legend,

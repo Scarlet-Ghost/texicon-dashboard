@@ -358,7 +358,7 @@ def styled_table(headers, rows, title: str = "",
     body_rows = "".join(body_rows_list)
 
     header_html = (
-        f'<div style="padding:10px 14px;font-size:12px;font-weight:600;'
+        f'<div style="padding:10px 14px;font-size:var(--fs-caption);font-weight:var(--fw-semibold);'
         f'border-bottom:1px solid var(--border);'
         f'display:flex;justify-content:space-between;align-items:center;">'
         f'<span>{title}</span><div style="display:flex;gap:6px;">{actions_html}</div>'

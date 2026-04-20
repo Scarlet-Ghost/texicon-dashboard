@@ -111,6 +111,27 @@ def inject_css(mode: Mode) -> str:
   --font-serif: {_FONT_SERIF};
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  /* Typography scale — TEXT */
+  --fs-display: 28px;
+  --fs-h1:      20px;
+  --fs-h2:      15px;
+  --fs-eyebrow: 11px;
+  --fs-body:    13px;
+  --fs-caption: 12px;
+  --fs-micro:   11px;
+  /* Typography scale — NUMERIC VALUES (KPIs) */
+  --fv-hero:    36px;
+  --fv-lg:      22px;
+  --fv-md:      16px;
+  /* Weights */
+  --fw-bold:     700;
+  --fw-semibold: 600;
+  --fw-medium:   500;
+  --fw-regular:  400;
+  /* Letter-spacing */
+  --ls-eyebrow: 0.06em;
+  --ls-tight:  -0.01em;
+  --ls-display:-0.02em;
 }}
 
 /* ===== Streamlit chrome ===== */
@@ -138,7 +159,7 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 }}
 .tx-brand {{
   display: inline-flex; align-items: center; gap: 10px;
-  font-family: var(--font-serif); font-weight: 500; font-size: 20px;
+  font-family: var(--font-serif); font-weight: var(--fw-medium); font-size: var(--fs-h1);
   letter-spacing: 0.03em; color: var(--text-primary);
 }}
 .tx-leaf {{
@@ -199,14 +220,30 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 
 /* ===== v9 page-link nav (st.page_link + .nav-pill-active) ===== */
 [data-testid="stPageLink"] a {{
-  font-size: 13px !important; color: var(--text-secondary) !important;
-  border-radius: 8px !important; padding: 6px 10px !important;
-  display: flex !important; justify-content: center !important;
-  align-items: center !important; text-align: center !important;
-  transition: background 100ms ease, color 100ms ease !important;
+  font-size: var(--fs-body) !important;
+  font-weight: var(--fw-medium) !important;
+  color: var(--text-primary) !important;
+  background: transparent !important;
+  border-radius: 8px !important;
+  padding: 6px 12px !important;
+  min-height: 36px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  opacity: 0.72;
+  transition: background 100ms ease, opacity 100ms ease, color 100ms ease !important;
 }}
 [data-testid="stPageLink"] a:hover {{
-  background: var(--bg-surface) !important; color: var(--text-primary) !important;
+  background: var(--bg-subtle) !important;
+  color: var(--text-primary) !important;
+  opacity: 1;
+}}
+[data-testid="stPageLink"] a p {{
+  color: inherit !important;
+  margin: 0 !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
 }}
 .nav-pill-active {{
   display: inline-block; padding: 6px 12px; border-radius: 8px;
@@ -217,14 +254,14 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 /* ===== Cards / KPIs ===== */
 .tx-card {{
   background: var(--bg-surface); border: 1px solid var(--border);
-  border-radius: 12px; padding: 14px;
+  border-radius: 12px; padding: 16px;
   transition: transform 120ms ease, box-shadow 120ms ease;
 }}
 .tx-card:hover {{ transform: translateY(-1px); box-shadow: var(--shadow-hover); }}
 .tx-kpi {{ position: relative; overflow: hidden; }}
-.tx-kpi .lbl {{ font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }}
-.tx-kpi .val {{ font-size: 22px; font-weight: 600; margin-top: 4px; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }}
-.tx-kpi .delta {{ font-size: 11px; margin-top: 2px; }}
+.tx-kpi .lbl {{ font-size: var(--fs-eyebrow); font-weight: var(--fw-medium); color: var(--text-muted); text-transform: uppercase; letter-spacing: var(--ls-eyebrow); }}
+.tx-kpi .val {{ font-size: var(--fv-lg); font-weight: var(--fw-semibold); letter-spacing: var(--ls-tight); font-variant-numeric: tabular-nums; }}
+.tx-kpi .delta {{ font-size: var(--fs-caption); }}
 .tx-kpi .delta.up {{ color: var(--brand-green); font-weight: 600; }}
 .tx-kpi .delta.down {{ color: var(--danger); }}
 .tx-kpi.hero {{ background: var(--hero-tint); }}
@@ -233,23 +270,23 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 
 /* ===== Tables ===== */
 .tx-table {{ background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }}
-.tx-table table {{ width: 100%; border-collapse: collapse; font-size: 12px; }}
+.tx-table table {{ width: 100%; border-collapse: collapse; font-size: var(--fs-body); }}
 .tx-table th {{
   text-align: left; padding: 8px 12px; background: var(--bg-subtle);
-  color: var(--text-muted); font-weight: 500; font-size: 10px;
-  text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border);
+  color: var(--text-muted); font-weight: var(--fw-medium); font-size: var(--fs-eyebrow);
+  text-transform: uppercase; letter-spacing: var(--ls-eyebrow); border-bottom: 1px solid var(--border);
 }}
-.tx-table td {{ padding: 8px 12px; border-top: 1px solid var(--border); color: var(--text-primary); }}
+.tx-table td {{ padding: 8px 12px; border-top: 1px solid var(--border); color: var(--text-primary); font-size: var(--fs-body); }}
 .tx-table tr:first-child td {{ border-top: 0; }}
 .tx-table tr:hover td {{ background: var(--bg-subtle); }}
 
 /* ===== Buttons ===== */
 .tx-btn {{
   display: inline-block; padding: 8px 16px; font-family: var(--font-ui);
-  font-size: 12px; font-weight: 500; border-radius: 8px; cursor: pointer;
+  font-size: var(--fs-body); font-weight: var(--fw-medium); border-radius: 8px; cursor: pointer;
   border: 1px solid transparent; text-decoration: none; transition: background 100ms ease;
 }}
-.tx-btn-primary {{ background: var(--btn-primary-bg); color: var(--btn-primary-fg); font-weight: 600; }}
+.tx-btn-primary {{ background: var(--btn-primary-bg); color: var(--btn-primary-fg); font-weight: var(--fw-semibold); }}
 .tx-btn-primary:hover {{ background: var(--btn-primary-hover); }}
 .tx-btn-secondary {{ background: var(--bg-surface); color: var(--text-primary); border-color: var(--border-input); }}
 .tx-btn-secondary:hover {{ background: var(--bg-subtle); }}
@@ -258,13 +295,22 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 .tx-btn-icon {{ padding: 7px; background: var(--bg-subtle); border-color: var(--border); }}
 
 /* ===== Streamlit native button override (so st.button matches secondary) ===== */
-[data-testid="stButton"] > button {{
-  background: var(--bg-surface) !important; color: var(--text-primary) !important;
-  border: 1px solid var(--border-input) !important; border-radius: 8px !important;
-  font-family: var(--font-ui) !important; font-size: 12px !important; font-weight: 500 !important;
-  padding: 8px 16px !important; transition: background 100ms ease;
+[data-testid="stButton"] > button,
+[data-testid="stDownloadButton"] > button,
+[data-testid="stFormSubmitButton"] > button {{
+  font-family: var(--font-ui) !important;
+  font-size: var(--fs-body) !important;
+  font-weight: var(--fw-medium) !important;
+  padding: 8px 14px !important;
+  min-height: 36px !important;
+  border-radius: 8px !important;
+  background: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-input) !important;
+  transition: background 100ms ease, border-color 100ms ease;
 }}
-[data-testid="stButton"] > button:hover {{ background: var(--bg-subtle) !important; }}
+[data-testid="stButton"] > button:hover,
+[data-testid="stDownloadButton"] > button:hover {{ background: var(--bg-subtle) !important; }}
 [data-testid="stButton"] > button:focus {{ box-shadow: var(--focus-ring) !important; outline: none !important; }}
 
 /* ===== Form submit (primary) — use brand gold instead of Streamlit's default ===== */
@@ -305,14 +351,14 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 }}
 
 /* ===== Badges ===== */
-.tx-badge {{ display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; }}
+.tx-badge {{ display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: var(--fs-eyebrow); font-weight: var(--fw-semibold); }}
 .tx-badge.gold {{ background: var(--brand-gold); color: #000; }}
 .tx-badge.green {{ background: rgba(45,138,62,0.10); color: var(--brand-green); border: 1px solid var(--brand-green); }}
 .tx-badge.muted {{ background: var(--bg-page); color: var(--text-secondary); }}
 
 /* ===== Section titles + breadcrumbs ===== */
-.tx-section-title {{ font-size: 15px; font-weight: 600; margin: 16px 0 8px; letter-spacing: -0.01em; }}
-.tx-breadcrumb {{ font-size: 11px; color: var(--text-muted); }}
+.tx-section-title {{ font-size: var(--fs-h2); font-weight: 600; margin: 16px 0 8px; letter-spacing: -0.01em; }}
+.tx-breadcrumb {{ font-size: var(--fs-caption); color: var(--text-muted); }}
 .tx-breadcrumb b {{ color: var(--text-primary); font-weight: 500; }}
 
 /* ===== Tab anchor: kill default underline (Streamlit's a:hover specificity) ===== */
@@ -331,39 +377,39 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 .hero-kpi {{
   background: var(--bg-surface); border: 1px solid var(--border);
   border-left: 3px solid var(--brand-green);
-  border-radius: 12px; padding: 18px 20px; margin: 14px 0;
+  border-radius: 12px; padding: 20px 24px; margin: 14px 0;
 }}
-.hero-kpi-label {{ font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }}
-.hero-kpi-value {{ font-size: 36px; font-weight: 700; margin-top: 6px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--text-primary); }}
+.hero-kpi-label {{ font-size: var(--fs-eyebrow); font-weight: var(--fw-medium); color: var(--text-muted); text-transform: uppercase; letter-spacing: var(--ls-eyebrow); }}
+.hero-kpi-value {{ font-size: var(--fv-hero); font-weight: var(--fw-bold); letter-spacing: var(--ls-display); font-variant-numeric: tabular-nums; color: var(--text-primary); }}
 .hero-kpi-value.critical {{ color: var(--danger); }}
-.hero-kpi-meta {{ font-size: 12px; color: var(--text-secondary); margin-top: 6px; display: flex; gap: 12px; flex-wrap: wrap; }}
+.hero-kpi-meta {{ font-size: var(--fs-caption); color: var(--text-secondary); display: flex; gap: 12px; flex-wrap: wrap; }}
 .hero-kpi-sub {{ color: var(--text-secondary); }}
-.hero-kpi-delta {{ font-weight: 600; }}
+.hero-kpi-delta {{ font-size: var(--fs-caption); font-weight: 600; }}
 .hero-kpi-delta.up {{ color: var(--brand-green); }}
 .hero-kpi-delta.down {{ color: var(--danger); }}
 
 /* Section headers / titles / rules */
-.section-eyebrow {{ font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 18px; }}
-.section-h2 {{ font-size: 18px; font-weight: 600; margin: 4px 0 8px; letter-spacing: -0.01em; color: var(--text-primary); }}
+.section-eyebrow {{ font-size: var(--fs-eyebrow); font-weight: var(--fw-medium); color: var(--text-muted); text-transform: uppercase; letter-spacing: var(--ls-eyebrow); margin-top: 18px; }}
+.section-h2 {{ font-size: var(--fs-h1); font-weight: var(--fw-semibold); margin: 4px 0 8px; letter-spacing: var(--ls-tight); color: var(--text-primary); }}
 .section-rule {{ display: none; }}
-.section-header {{ font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 18px 0 8px; letter-spacing: -0.01em; }}
+.section-header {{ font-size: var(--fs-h2); font-weight: var(--fw-semibold); color: var(--text-primary); margin: 18px 0 8px; letter-spacing: -0.01em; }}
 .section-card {{ background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin: 12px 0; }}
-.section-card-title {{ font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }}
-.section-card-subtitle {{ font-size: 11px; color: var(--text-muted); }}
+.section-card-title {{ font-size: var(--fs-h2); font-weight: var(--fw-semibold); color: var(--text-primary); margin-bottom: 4px; }}
+.section-card-subtitle {{ font-size: var(--fs-caption); color: var(--text-muted); }}
 
 /* Legacy KPI card */
 .kpi-card, .kpi-card-na {{
   background: var(--bg-surface); border: 1px solid var(--border);
-  border-radius: 12px; padding: 12px 14px; transition: transform 120ms ease, box-shadow 120ms ease;
+  border-radius: 12px; padding: 16px; transition: transform 120ms ease, box-shadow 120ms ease;
 }}
 .kpi-card:hover {{ transform: translateY(-1px); box-shadow: var(--shadow-hover); }}
 .kpi-card.danger-glow {{ border-left: 3px solid var(--danger); }}
 .kpi-card.warning-glow {{ border-left: 3px solid var(--brand-gold); }}
-.kpi-label {{ font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }}
-.kpi-value {{ font-size: 22px; font-weight: 600; margin-top: 4px; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; color: var(--text-primary); }}
+.kpi-label {{ font-size: var(--fs-eyebrow); font-weight: var(--fw-medium); color: var(--text-muted); text-transform: uppercase; letter-spacing: var(--ls-eyebrow); }}
+.kpi-value {{ font-size: var(--fv-lg); font-weight: var(--fw-semibold); letter-spacing: var(--ls-tight); font-variant-numeric: tabular-nums; color: var(--text-primary); }}
 .kpi-value--na {{ color: var(--text-muted); }}
 .kpi-value.critical {{ color: var(--danger); }}
-.kpi-delta {{ font-size: 11px; margin-top: 4px; }}
+.kpi-delta {{ font-size: var(--fs-caption); }}
 .kpi-delta.up {{ color: var(--brand-green); font-weight: 600; }}
 .kpi-delta.down {{ color: var(--danger); }}
 .kpi-delta.muted {{ color: var(--text-muted); }}
@@ -371,51 +417,98 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 /* Mini card */
 .mini-card {{ background: var(--bg-surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }}
 .mini-content {{ display: flex; flex-direction: column; gap: 2px; }}
-.mini-label {{ font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }}
-.mini-value {{ font-size: 14px; font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }}
+.mini-label {{ font-size: var(--fs-eyebrow); font-weight: var(--fw-medium); color: var(--text-muted); text-transform: uppercase; letter-spacing: var(--ls-eyebrow); }}
+.mini-value {{ font-size: var(--fv-md); font-weight: var(--fw-semibold); color: var(--text-primary); font-variant-numeric: tabular-nums; }}
 
 /* Compare card */
 .compare-card {{ background: var(--bg-surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }}
-.compare-label {{ font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }}
-.compare-main {{ font-size: 14px; font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }}
+.compare-label {{ font-size: var(--fs-eyebrow); font-weight: var(--fw-medium); color: var(--text-muted); text-transform: uppercase; letter-spacing: var(--ls-eyebrow); }}
+.compare-main {{ font-size: var(--fv-md); font-weight: var(--fw-semibold); color: var(--text-primary); font-variant-numeric: tabular-nums; }}
 .compare-arrow {{ margin: 0 6px; color: var(--text-muted); }}
-.compare-prev {{ font-size: 12px; color: var(--text-secondary); }}
-.compare-delta {{ font-size: 11px; margin-left: 6px; font-weight: 600; }}
+.compare-prev {{ font-size: var(--fs-caption); color: var(--text-secondary); }}
+.compare-delta {{ font-size: var(--fs-caption); margin-left: 6px; font-weight: 600; }}
 .compare-delta.up {{ color: var(--brand-green); }}
 .compare-delta.down {{ color: var(--danger); }}
 .compare-delta.muted {{ color: var(--text-muted); }}
 
 /* Insight + alert + risk + all-clear */
-.insight-card {{ background: var(--bg-surface); border: 1px solid var(--border); border-left: 3px solid var(--brand-green); border-radius: 10px; padding: 10px 14px; margin: 8px 0; font-size: 12px; color: var(--text-primary); }}
+.insight-card {{ background: var(--bg-surface); border: 1px solid var(--border); border-left: 3px solid var(--brand-green); border-radius: 10px; padding: 10px 14px; margin: 8px 0; font-size: var(--fs-caption); color: var(--text-primary); }}
 .insight-info {{ border-left-color: var(--brand-green); }}
 .insight-warning {{ border-left-color: var(--brand-gold); }}
 .insight-critical {{ border-left-color: var(--danger); }}
-.alert-banner {{ background: var(--bg-surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin: 8px 0; font-size: 12px; }}
+.alert-banner {{ background: var(--bg-surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin: 8px 0; font-size: var(--fs-caption); }}
 .alert-info {{ border-left: 3px solid var(--brand-green); }}
 .alert-warning {{ border-left: 3px solid var(--brand-gold); }}
 .alert-danger {{ border-left: 3px solid var(--danger); color: var(--danger); }}
 .risk-card {{ background: var(--bg-surface); border: 1px solid var(--border); border-left: 3px solid var(--brand-gold); border-radius: 10px; padding: 12px 14px; margin: 8px 0; }}
 .risk-card.critical {{ border-left-color: var(--danger); }}
-.risk-title {{ font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }}
-.risk-desc {{ font-size: 12px; color: var(--text-secondary); line-height: 1.4; }}
-.all-clear-box {{ background: var(--bg-surface); border: 1px solid var(--border); border-left: 3px solid var(--brand-green); border-radius: 10px; padding: 12px 14px; font-size: 12px; color: var(--text-secondary); }}
+.risk-title {{ font-size: var(--fs-h2); font-weight: var(--fw-semibold); color: var(--text-primary); margin-bottom: 4px; }}
+.risk-desc {{ font-size: var(--fs-caption); color: var(--text-secondary); line-height: 1.4; }}
+.all-clear-box {{ background: var(--bg-surface); border: 1px solid var(--border); border-left: 3px solid var(--brand-green); border-radius: 10px; padding: 12px 14px; font-size: var(--fs-caption); color: var(--text-secondary); }}
 .all-clear-sub {{ color: var(--text-muted); margin-top: 2px; }}
 .risk-header {{ font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 16px 0 8px; }}
-.risk-count-badge {{ display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; background: var(--bg-page); color: var(--text-secondary); margin-left: 6px; }}
+.risk-count-badge {{ display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: var(--fs-eyebrow); font-weight: var(--fw-semibold); background: var(--bg-page); color: var(--text-secondary); margin-left: 6px; }}
 .risk-count-badge.warning {{ background: var(--brand-gold); color: #000; }}
 .risk-count-badge.clear {{ background: rgba(45,138,62,0.10); color: var(--brand-green); border: 1px solid var(--brand-green); }}
 
 /* Legacy badge */
-.badge {{ display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; background: var(--bg-page); color: var(--text-secondary); }}
+.badge {{ display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: var(--fs-eyebrow); font-weight: var(--fw-semibold); background: var(--bg-page); color: var(--text-secondary); }}
 .badge-success {{ background: rgba(45,138,62,0.10); color: var(--brand-green); border: 1px solid var(--brand-green); }}
 .badge-warning {{ background: var(--brand-gold); color: #000; }}
 .badge-danger {{ background: rgba(220,38,38,0.10); color: var(--danger); border: 1px solid var(--danger); }}
 .badge-info {{ background: var(--bg-page); color: var(--text-secondary); }}
 
+/* Card layout: flex column + min-height so neighboring cards align */
+.kpi-card, .kpi-card-na {{
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 6px;
+  min-height: 104px;
+}}
+.hero-kpi {{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  min-height: 112px;
+}}
+.tx-card.tx-kpi {{
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 6px;
+  min-height: 96px;
+}}
+.mini-card {{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 64px;
+}}
+.compare-card {{
+  min-height: 72px;
+}}
+
+/* Make Streamlit column children stretch to row height so cards in a row are equal */
+[data-testid="stHorizontalBlock"] > [data-testid="column"] {{
+  display: flex;
+  flex-direction: column;
+}}
+[data-testid="stHorizontalBlock"] > [data-testid="column"] > [data-testid="stVerticalBlock"] {{
+  flex: 1;
+}}
+[data-testid="stHorizontalBlock"] > [data-testid="column"] .kpi-card,
+[data-testid="stHorizontalBlock"] > [data-testid="column"] .hero-kpi,
+[data-testid="stHorizontalBlock"] > [data-testid="column"] .tx-card.tx-kpi,
+[data-testid="stHorizontalBlock"] > [data-testid="column"] .mini-card {{
+  flex: 1;
+}}
+
 /* Top-bar (legacy data-as-of strip — small text in section above tabs if used) */
 .top-bar {{ display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); padding: 6px 0; }}
 .top-bar-left, .top-bar-right {{ display: flex; align-items: center; gap: 8px; }}
-.freshness-badge {{ display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; }}
+.freshness-badge {{ display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; font-size: var(--fs-eyebrow); font-weight: var(--fw-semibold); }}
 .freshness-fresh {{ background: rgba(45,138,62,0.10); color: var(--brand-green); }}
 .freshness-stale {{ background: var(--brand-gold); color: #000; }}
 .freshness-dot {{ width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; }}
@@ -426,7 +519,7 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 .conc-bar .seg {{ display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; font-weight: 600; }}
 
 /* Empty state */
-.empty-state {{ background: var(--bg-surface); border: 1px dashed var(--border); border-radius: 12px; padding: 24px; text-align: center; color: var(--text-muted); }}
+.empty-state {{ background: var(--bg-surface); border: 1px dashed var(--border); border-radius: 12px; padding: 24px; text-align: center; color: var(--text-muted); font-size: var(--fs-caption); }}
 
 /* Tooltip icon */
 .tooltip-icon {{ display: inline-block; width: 14px; height: 14px; line-height: 14px; text-align: center; border-radius: 50%; background: var(--bg-subtle); color: var(--text-muted); font-size: 9px; margin-left: 6px; cursor: help; border: 1px solid var(--border); }}
@@ -567,7 +660,7 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 
 /* ===== Breadcrumb (render_breadcrumb) ===== */
 .breadcrumb {{
-  font-size: 11px; color: var(--text-muted);
+  font-size: var(--fs-caption); color: var(--text-muted);
   margin: 4px 0 8px; display: flex; align-items: center; flex-wrap: wrap;
   font-family: var(--font-ui);
 }}
@@ -587,14 +680,14 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
   background: var(--bg-surface); border: 1px solid var(--border);
   border-left: 3px solid var(--text-muted);
   border-radius: 10px; padding: 8px 12px; margin: 6px 0 10px;
-  font-size: 12px; color: var(--text-secondary);
+  font-size: var(--fs-caption); color: var(--text-secondary);
   display: flex; align-items: center; gap: 8px;
 }}
 .alert-strip-warning {{ border-left-color: var(--brand-gold); }}
 .alert-strip-danger {{ border-left-color: var(--danger); }}
 .alert-strip-count {{
   display: inline-block; padding: 2px 8px; border-radius: 99px;
-  font-size: 10px; font-weight: 600; background: var(--bg-page);
+  font-size: var(--fs-eyebrow); font-weight: var(--fw-semibold); background: var(--bg-page);
   color: var(--text-secondary);
 }}
 .alert-strip-count-warning {{ background: var(--brand-gold); color: #000; }}
@@ -609,11 +702,11 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 
 /* ===== Page title / subtitle ===== */
 .page-title {{
-  font-size: 20px; font-weight: 600; color: var(--text-primary);
-  letter-spacing: -0.01em; margin: 10px 0 2px;
+  font-size: var(--fs-display); font-weight: var(--fw-semibold); color: var(--text-primary);
+  letter-spacing: var(--ls-display); margin: 10px 0 2px;
 }}
 .page-subtitle {{
-  font-size: 12px; color: var(--text-muted);
+  font-size: var(--fs-caption); color: var(--text-muted);
   margin-bottom: 12px;
 }}
 
