@@ -10,13 +10,16 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed")
 
-# Load CSS + hide sidebar completely
-css_path = os.path.join(os.path.dirname(__file__), "assets", "style.css")
-with open(css_path) as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-st.markdown(
-    '<style>section[data-testid="stSidebar"] { display: none !important; }</style>',
-    unsafe_allow_html=True)
+# New v9 theme + motion (replaces legacy style.css + sidebar-hide injection)
+try:
+    from components.theme import inject_css, current_theme
+    from components.motion import loading_overlay_html, hide_loading_script
+except ModuleNotFoundError:
+    from dashboard.components.theme import inject_css, current_theme
+    from dashboard.components.motion import loading_overlay_html, hide_loading_script
+
+st.markdown(inject_css(current_theme()), unsafe_allow_html=True)
+st.markdown(loading_overlay_html(), unsafe_allow_html=True)
 
 from components.auth import render_login, current_role, user_chip, require_role
 
@@ -72,7 +75,11 @@ cr = transform_collection_report(cr_raw)
 # --- Navigation ---
 # Compute risks early for nav badge
 _pre_risks = compute_global_risks(sr, so, dr)
-render_nav(active_page="app", risk_count=len(_pre_risks), role=current_role())
+try:
+    from components.drawers import render_top_bar
+except ModuleNotFoundError:
+    from dashboard.components.drawers import render_top_bar
+render_top_bar(active_page="Revenue")
 
 # --- Top Filters (collapsed by default on Executive overview) ---
 filters = render_top_filters(sr, so, dr, page_key="main", expand_filters=False)
@@ -85,17 +92,11 @@ kpi_trends = compute_monthly_kpi_trends(sr_f)
 
 # --- Empty State ---
 if sr_f.empty:
-    data_end = "N/A"
-    top_bar(data_end, datetime.now().strftime("%a, %b %d, %Y  %I:%M:%S %p"))
     user_chip()
     empty_state()
     st.stop()
 
 # --- Top Bar with freshness ---
-data_end = sr_f["DATE"].max().strftime("%B %d, %Y") if ("DATE" in sr_f.columns and pd.notna(sr_f["DATE"].max())) else "N/A"
-freshness_hours = get_data_freshness()
-top_bar(data_end, datetime.now().strftime("%a, %b %d, %Y  %I:%M:%S %p"),
-        freshness_hours=freshness_hours)
 user_chip()
 
 # --- Page Title ---
@@ -549,3 +550,4 @@ with wc2_cols[2]:
 _compute_ms = int((time.time() - t0) * 1000)
 st.markdown(f'<div style="text-align:right; font-size:var(--f-xs); color:var(--fg-3); margin-top:var(--s-4);">Rendered in {_compute_ms}ms</div>', unsafe_allow_html=True)
 scroll_to_top_button()
+st.markdown(hide_loading_script(), unsafe_allow_html=True)
