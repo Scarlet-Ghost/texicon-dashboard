@@ -10,3 +10,4 @@ dashboard/.streamlit/secrets.toml
 .ipynb_checkpoints/
 .vscode/
 .venv/
+.superpowers/
