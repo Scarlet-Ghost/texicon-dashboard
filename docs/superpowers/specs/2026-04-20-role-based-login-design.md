@@ -66,7 +66,7 @@ require_role(allowed=["owner"])  # or ["owner", "sales"] for p4, p5; ["sales"] f
 - **`components/insights.py`**: `generate_cash_insights`, `generate_operations_insights`, `generate_executive_insights` MUST NOT be imported by Sales Home or rendered on p4/p5 in sales role. `generate_reconnection_insights` and `generate_revenue_insights` are sales-safe.
 
 ### Top bar
-Adds a separate `user_chip()` component (role label + "Log out" button) rendered beside existing `top_bar()`. `top_bar` signature unchanged — avoids rippling to 7 call sites. Logout body: `st.session_state.clear(); st.rerun()` — clears ALL session keys, not just `role`.
+Adds a separate `user_chip()` component (role label + "Log out" button) rendered immediately after every `top_bar()` call (on `app.py` and all 6 pages — same 7 call sites, but additive). `top_bar` signature unchanged — avoids rippling to 7 call sites. Logout body: `st.session_state.clear(); st.rerun()` — clears ALL session keys, not just `role`.
 
 ## Components
 
