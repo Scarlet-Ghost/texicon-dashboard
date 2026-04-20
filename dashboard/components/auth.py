@@ -136,21 +136,7 @@ def logout_button(key="logout_btn"):
 
 
 def user_chip():
-    """Render a small role chip + logout button on the right side of the page.
-
-    Call once per page, immediately after top_bar(). Uses a 2-column layout
-    so the chip floats to the right.
-    """
-    role = current_role()
-    if role is None:
-        return
-    label = "Owner" if role == _ROLE_OWNER else "Sales"
-    c1, c2 = st.columns([6, 1])
-    with c1:
-        st.markdown(
-            f'<div style="font-size:0.78rem;color:var(--text-secondary);'
-            f'margin-top:4px;">Logged in as <strong>{label}</strong></div>',
-            unsafe_allow_html=True,
-        )
-    with c2:
-        logout_button()
+    """No-op. Role chip + Log out are rendered by render_top_bar() in the
+    topbar card. Kept as a stub so existing callers (app.py + pages) don't
+    need to be edited."""
+    return

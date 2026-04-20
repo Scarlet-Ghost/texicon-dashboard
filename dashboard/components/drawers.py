@@ -638,20 +638,26 @@ def render_top_bar(active_page: str):
     theme = current_theme()
     st.markdown(top_bar_html(theme=theme, role_label=role_label),
                 unsafe_allow_html=True)
-    # Session-preserving theme toggle. Narrow column aligned right; CSS
-    # styles .tx-theme-btn to look like the visual toggle pill.
-    _, btn_col = st.columns([8, 1])
-    with btn_col:
-        other = "dark" if theme == "light" else "light"
-        label = "☾ Dark" if theme == "light" else "☀ Light"
-        st.markdown('<div class="tx-theme-btn-wrap">', unsafe_allow_html=True)
-        if st.button(label, key=f"theme_toggle_{active_page}",
-                     use_container_width=True):
-            set_theme(other)
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
+
+    # Log out button — CSS-positioned into the topbar card (right side).
+    st.markdown('<div class="tx-logout-slot">', unsafe_allow_html=True)
+    if st.button("Log out", key=f"topbar_logout_{active_page}"):
+        st.session_state.clear()
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
     page_id = _label_to_page_id(active_page, role)
     render_nav(active_page=page_id, risk_count=0, role=role)
+
+    # Theme toggle — fixed bottom-left FAB. Session-preserving st.button
+    # (a plain <a href="?theme="> would drop the WebSocket and log users out).
+    other = "dark" if theme == "light" else "light"
+    label = "☾ Dark" if theme == "light" else "☀ Light"
+    st.markdown('<div class="tx-theme-fab">', unsafe_allow_html=True)
+    if st.button(label, key=f"theme_toggle_{active_page}"):
+        set_theme(other)
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 def kpi_card_html(label: str, value: str, delta: str = "",

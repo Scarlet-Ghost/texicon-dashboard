@@ -131,20 +131,50 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 /* ===== Topbar ===== */
 .tx-topbar {{
   display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 14px; background: var(--bg-surface);
+  padding: 14px 20px; background: var(--bg-surface);
   border: 1px solid var(--border); border-radius: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 12px; position: relative;
 }}
 .tx-brand {{
-  display: flex; align-items: center; gap: 8px;
-  font-family: var(--font-serif); font-weight: 700; font-size: 16px;
-  letter-spacing: 0.02em; color: var(--text-primary);
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-serif); font-weight: 700; font-size: 24px;
+  letter-spacing: 0.04em; color: var(--text-primary);
 }}
 .tx-leaf {{
-  width: 16px; height: 10px; background: var(--brand-gold);
+  width: 20px; height: 12px; background: var(--brand-gold);
   border-radius: 50% 50% 50% 0; transform: rotate(-25deg); display: inline-block;
 }}
 .tx-topright {{ display: flex; align-items: center; gap: 10px; }}
+.tx-topright .tx-badge {{ font-size: 11px; padding: 4px 10px; }}
+
+/* Logout slot: yanked up into the topbar card on the right side */
+.tx-logout-slot {{
+  position: absolute; top: 10px; right: 64px; z-index: 20;
+}}
+.tx-logout-slot [data-testid="stButton"] > button {{
+  padding: 4px 12px !important; font-size: 11px !important;
+  min-height: 0 !important; line-height: 1.4 !important;
+  background: transparent !important; color: var(--text-secondary) !important;
+  border: 1px solid var(--border) !important;
+}}
+.tx-logout-slot [data-testid="stButton"] > button:hover {{
+  background: var(--bg-subtle) !important; color: var(--text-primary) !important;
+}}
+
+/* Floating theme toggle: fixed bottom-left FAB */
+.tx-theme-fab {{
+  position: fixed; bottom: 20px; left: 20px; z-index: 9000;
+}}
+.tx-theme-fab [data-testid="stButton"] > button {{
+  padding: 8px 14px !important; font-size: 12px !important;
+  border-radius: 99px !important;
+  background: var(--bg-surface) !important; color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+}}
+.tx-theme-fab [data-testid="stButton"] > button:hover {{
+  background: var(--bg-subtle) !important;
+}}
 .tx-toggle {{
   display: inline-flex; background: var(--bg-page); border: 1px solid var(--border);
   border-radius: 99px; padding: 2px;
@@ -176,6 +206,8 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 [data-testid="stPageLink"] a {{
   font-size: 13px !important; color: var(--text-secondary) !important;
   border-radius: 8px !important; padding: 6px 10px !important;
+  display: flex !important; justify-content: center !important;
+  align-items: center !important; text-align: center !important;
   transition: background 100ms ease, color 100ms ease !important;
 }}
 [data-testid="stPageLink"] a:hover {{
@@ -467,6 +499,54 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 /* ===== Page transition ===== */
 @keyframes tx-page-in {{ from {{ opacity: 0; transform: translateY(4px); }} to {{ opacity: 1; transform: translateY(0); }} }}
 @keyframes tx-fade-in {{ from {{ opacity: 0; }} to {{ opacity: 1; }} }}
+
+/* ===== Breadcrumb (render_breadcrumb) ===== */
+.breadcrumb {{
+  font-size: 11px; color: var(--text-muted);
+  margin: 4px 0 8px; display: flex; align-items: center; flex-wrap: wrap;
+  font-family: var(--font-ui);
+}}
+.breadcrumb .bc-link {{
+  color: var(--link-fg); text-decoration: none;
+}}
+.breadcrumb .bc-link:hover {{ text-decoration: underline; }}
+.breadcrumb .bc-current {{
+  color: var(--text-primary); font-weight: 500;
+}}
+.breadcrumb .bc-sep {{
+  color: var(--text-muted); margin: 0 8px;
+}}
+
+/* ===== Alert strip (global_alert_strip) ===== */
+.alert-strip {{
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-left: 3px solid var(--text-muted);
+  border-radius: 10px; padding: 8px 12px; margin: 6px 0 10px;
+  font-size: 12px; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 8px;
+}}
+.alert-strip-warning {{ border-left-color: var(--brand-gold); }}
+.alert-strip-danger {{ border-left-color: var(--danger); }}
+.alert-strip-count {{
+  display: inline-block; padding: 2px 8px; border-radius: 99px;
+  font-size: 10px; font-weight: 600; background: var(--bg-page);
+  color: var(--text-secondary);
+}}
+.alert-strip-count-warning {{ background: var(--brand-gold); color: #000; }}
+.alert-strip-count-danger {{
+  background: rgba(220,38,38,0.10); color: var(--danger);
+  border: 1px solid var(--danger);
+}}
+
+/* ===== Page title / subtitle ===== */
+.page-title {{
+  font-size: 20px; font-weight: 600; color: var(--text-primary);
+  letter-spacing: -0.01em; margin: 10px 0 2px;
+}}
+.page-subtitle {{
+  font-size: 12px; color: var(--text-muted);
+  margin-bottom: 12px;
+}}
 
 /* ===== Reduced motion guard ===== */
 @media (prefers-reduced-motion: reduce) {{
