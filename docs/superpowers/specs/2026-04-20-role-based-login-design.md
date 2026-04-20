@@ -32,48 +32,61 @@ Sales CANNOT see: unit cost, margin %, profit, AR aging, DSO, warehouse ops, cyc
 ## Architecture
 
 ### Login gate
-`app.py` entry:
-1. If `st.session_state.role` unset → render login form (role dropdown + password field) and `st.stop()`.
-2. On submit, compare password against `st.secrets["auth"]["owner_password"]` / `["sales_password"]`. On match set `st.session_state.role` and `st.rerun()`.
-3. On role `owner` → render current exec dashboard (existing `app.py` body).
-4. On role `sales` → render Sales Home body.
+`app.py` ordering (critical):
+1. `st.set_page_config(...)` and CSS load (lines 8–19 of current `app.py`) stay at top.
+2. **Login gate runs BEFORE the 4 `load_*()` data calls** so wrong passwords don't pay the Excel-load cost.
+3. If `st.session_state.role` unset → render login form inside `st.form("login")` (role dropdown + password input + `form_submit_button`), then `st.stop()`.
+4. On submit, compare with `hmac.compare_digest(entered.encode(), st.secrets["auth"]["owner_password"].encode())` (and same for sales). On match set `st.session_state.role`, `st.session_state.authed_at`, and `st.rerun()`.
+5. After gate: `if role == "sales": render_sales_home(); st.stop()` — ensures owner data loads never run for sales users.
+6. Otherwise (role=owner) continue with existing `app.py` body.
+7. If `st.secrets["auth"]` is missing or keys absent → render "Auth not configured — contact admin" stop-screen (don't crash).
 
 ### Page guards
-Every file in `pages/` gets a 3-line guard at the top:
+Every file in `pages/` gets the guard **AFTER** `st.set_page_config(...)` and the CSS+sidebar-hide block, **BEFORE** any data loading or rendering:
 ```python
 from components.auth import require_role
-require_role(allowed=["owner"])  # or ["owner", "sales"] for p4, p5
+require_role(allowed=["owner"])  # or ["owner", "sales"] for p4, p5; ["sales"] for page 0
 ```
-`require_role` checks session state; redirects to login if unset, shows "Not authorized" stop-screen if role not in allowed list.
+`require_role(allowed)`:
+- If `role` unset → render "Please log in" message with link to `app`, then `st.stop()`.
+- If `role` not in `allowed` → render "Not authorized for your role" message, then `st.stop()`.
+- Always ends in `st.stop()` on the denial path so nothing below executes.
+- Streamlit multi-page routing fact: hitting `/Cash_Collections` directly runs only that page's script — `app.py` does NOT execute first. The guard is therefore the sole security boundary on direct URL access.
 
 ### Nav
-`render_nav(role)` in `components/drawers.py` emits only the page_links allowed for the given role.
+`render_nav(active_page, risk_count, role)` in `components/drawers.py` filters page_links by role.
 - Owner nav: 7 items (current).
 - Sales nav: Sales Home · Reconnection · Sales Intelligence (3 items).
+- Signature ripple: **every `render_nav(...)` call site updates to pass role** — `app.py` + all 6 `pages/*.py` = 7 call sites.
+- Breadcrumb (`render_breadcrumb`) becomes role-aware: sales breadcrumbs anchor to `Sales_Home`, not exec home.
 
-### Conditional sections
-Page 5 margin analysis block wrapped in `if st.session_state.role == "owner":`. No locked placeholders — block simply doesn't render for sales.
+### Conditional sections & alert suppression
+- Page 5 **margin block (lines 375–468 of `5_Sales_Intelligence.py`, all of Section 4 including its `section_divider`)** wrapped in `if current_role() == "owner":`. Block simply doesn't render for sales — no placeholders.
+- **`global_alert_strip` and `compute_global_risks` are NEVER called on sales-facing pages** (Sales Home, p4, p5 when viewed as sales). Every current risk (Credit Exposure, Delivery Performance, Fulfillment Gap) references forbidden metrics. For sales sessions, `render_nav` receives `risk_count=0` and the alert strip is skipped entirely.
+- **`components/insights.py`**: `generate_cash_insights`, `generate_operations_insights`, `generate_executive_insights` MUST NOT be imported by Sales Home or rendered on p4/p5 in sales role. `generate_reconnection_insights` and `generate_revenue_insights` are sales-safe.
 
 ### Top bar
-Adds role chip (e.g. "Sales" / "Owner") and a "Log out" button that clears session state and reruns.
+Adds a separate `user_chip()` component (role label + "Log out" button) rendered beside existing `top_bar()`. `top_bar` signature unchanged — avoids rippling to 7 call sites. Logout body: `st.session_state.clear(); st.rerun()` — clears ALL session keys, not just `role`.
 
 ## Components
 
 ### New
-- `components/auth.py` — `render_login()`, `require_role(allowed)`, `logout_button()`, `current_role()`
-- `pages/0_Sales_Home.py` — Sales landing page (title prefix `0_` makes it first in Streamlit's auto-ordering, but nav is custom so order doesn't matter functionally; guarded to sales-only)
+- `components/auth.py` — `render_login()` (uses `st.form`), `require_role(allowed)` (ends in `st.stop()`), `logout_button()`, `current_role()`, `user_chip()`. Graceful handling if `st.secrets["auth"]` missing.
+- `pages/0_Sales_Home.py` — Sales landing page, guarded `require_role(["sales"])`. Owner has its own exec home at `app.py`.
 
 ### Modified
-- `app.py` — prepend login gate; branch body on role
-- `pages/1_Revenue_Sales.py` — add `require_role(["owner"])`
-- `pages/2_Cash_Collections.py` — add `require_role(["owner"])`
-- `pages/3_Operations_Delivery.py` — add `require_role(["owner"])`
-- `pages/4_Customer_Reconnection.py` — add `require_role(["owner", "sales"])`
-- `pages/5_Sales_Intelligence.py` — add `require_role(["owner", "sales"])`; wrap margin section in owner check
-- `pages/6_Data_Explorer.py` — add `require_role(["owner"])`
-- `components/drawers.py` — `render_nav(role)` filters by role; `top_bar` adds role chip + logout button
-- `.streamlit/secrets.toml` — new `[auth]` section (local)
-- Streamlit Cloud secrets — same `[auth]` section (production)
+- `app.py` — login gate inserted after `st.set_page_config`/CSS load but BEFORE `load_*()` calls (lines 46–49); role branch: `if role=="sales": render_sales_home(); st.stop()` before owner body runs. Adds `user_chip()` render near `top_bar`.
+- `pages/1_Revenue_Sales.py` — `require_role(["owner"])` after page_config+CSS block, before data loads. Update `render_nav(..., role=...)` call.
+- `pages/2_Cash_Collections.py` — same pattern.
+- `pages/3_Operations_Delivery.py` — same pattern.
+- `pages/4_Customer_Reconnection.py` — `require_role(["owner", "sales"])`; remove `global_alert_strip` call when role=="sales"; pass `risk_count=0` to `render_nav` when role=="sales"; role-aware breadcrumb.
+- `pages/5_Sales_Intelligence.py` — `require_role(["owner", "sales"])`; wrap margin Section 4 (lines 375–468) in owner check; same alert-strip/breadcrumb treatment as p4.
+- `pages/6_Data_Explorer.py` — `require_role(["owner"])`.
+- `components/drawers.py` — `render_nav` gains `role` parameter, filters `_NAV_PAGES` to allowed pages for role, injects `0_Sales_Home` entry for sales role. `render_breadcrumb` becomes role-aware. `top_bar` unchanged.
+- `data/analytics.py` — add sales-home helpers: `get_top_customers_ytd(sr, n=10)`, `get_top_items_ytd(sr, n=10)`, `get_active_customers_this_month(sr)`, `get_new_customers_this_month(sr)`. Reuse `data/reconnection.build_reconnection_data` for at-risk/falling-out counts (use existing `RECON_THRESHOLDS` segmentation; don't invent new 30/90d).
+- `.streamlit/secrets.toml` — new `[auth]` section (local).
+- Streamlit Cloud secrets — same `[auth]` section (production).
+- `.gitignore` — add `.streamlit/secrets.toml` if not already excluded.
 
 ## Secrets shape
 
@@ -90,21 +103,23 @@ sales_password = "..."
 
 ## Sales Home data sources
 
-- Active customers this month → derive from `sr` (sales report) filtered to current month, distinct customer count.
-- New customers → customers in current month whose first-ever order is in current month.
-- At-risk (30d silent) / dormant (90d+) → reuse existing reconnection logic from page 4.
-- Top 10 customers by YTD revenue → `sr` grouped by customer, summed, sorted, top 10.
-- Top 10 items by YTD qty/revenue → `sr` grouped by item, summed, sorted, top 10.
+- **Active customers this month** → `sr` filtered to current month, distinct customer count. New helper `get_active_customers_this_month`.
+- **New customers this month** → customers whose first-ever order date is in current month. New helper `get_new_customers_this_month`.
+- **At Risk / Falling Out counts** → reuse `data/reconnection.build_reconnection_data` with existing `RECON_THRESHOLDS` segmentation. Labels match page 4 exactly ("High Potential", "At Risk", "Falling Out") — do NOT invent new 30/90d thresholds that would disagree with the reconnection page.
+- **Top 10 customers by YTD revenue** → `sr` grouped by customer, summed, sorted. New helper `get_top_customers_ytd`.
+- **Top 10 items by YTD qty/revenue** → `sr` grouped by item. New helper `get_top_items_ytd`.
 
-All logic either reuses `data/analytics.py` helpers or adds thin new helpers there. No cost/margin columns surfaced.
+All helpers live in `data/analytics.py` (shared with owner pages so numbers agree). No cost/margin columns surfaced anywhere.
 
 ## Non-goals (v1)
 
 - No per-user accounts, no user management UI, no audit log.
-- No session timeout / auto-logout.
+- No session timeout / auto-logout (`authed_at` stored but unused in v1).
 - No password reset flow (rotate via Streamlit Cloud secrets).
 - No 2FA.
 - No rate-limiting on login (Streamlit Cloud private repo is already gated).
+- **Password rotation does NOT force active sessions to re-authenticate.** Rotating `sales_password` while a sales user has the dashboard open: they keep access until their browser tab closes. Accepted for v1.
+- **Each tab/window = its own session.** Streamlit session state is per-websocket; opening a new tab requires a fresh login. Document for sales users.
 
 ## Testing
 
@@ -114,6 +129,9 @@ All logic either reuses `data/analytics.py` helpers or adds thin new helpers the
 
 ## Risks & mitigations
 
-- **URL bypass:** page guards are the real security boundary; hidden nav is UX only.
-- **Shared password leak:** rotate via Streamlit Cloud secrets; no code change needed.
-- **Sales Home data drift:** reuse central `data/analytics.py` so owner and sales see consistent numbers.
+- **URL bypass:** page guards are the real security boundary; hidden nav is UX only. Every `pages/*.py` MUST have `require_role(...)` as the first code after `st.set_page_config`+CSS. Add a simple grep-based check (CI or pre-commit) to enforce.
+- **Shared password leak:** rotate via Streamlit Cloud secrets; no code change needed. Active sessions persist until tab closes (accepted).
+- **Sales Home data drift:** reuse central `data/analytics.py` and existing `RECON_THRESHOLDS` so owner and sales see consistent numbers.
+- **Timing attack on password:** `hmac.compare_digest` used for comparison.
+- **Missing secrets crash:** `components/auth.py` wraps `st.secrets["auth"][...]` access in try/except and renders a graceful stop-screen.
+- **New sensitive section added later leaks to sales:** all role checks use a uniform helper (`current_role()` or `owner_only()` context manager) so future code review can grep for the pattern.
