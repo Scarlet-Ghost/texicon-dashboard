@@ -568,10 +568,17 @@ def _sparkline_svg(values, width=70, height=22, color=None, stroke_width=1.5):
 
 
 def top_bar_html(theme: str, role_label: str = "", primary_action: str = "") -> str:
-    """Topbar HTML: serif TEXICON wordmark, theme toggle, role chip, optional action."""
-    other = "dark" if theme == "light" else "light"
-    sun_class = "on" if theme == "light" else ""
-    moon_class = "on" if theme == "dark" else ""
+    """Topbar HTML: serif TEXICON wordmark, role chip, optional action.
+
+    The theme toggle is NOT rendered here. render_top_bar (below) emits a
+    session-preserving st.button separately — a plain <a href="?theme=..."> in
+    the topbar HTML would reload the page and drop Streamlit's WebSocket
+    session, logging the user out.
+
+    (The ``theme`` parameter is retained for the ``.tx-toggle`` data hook so
+    existing tests and any legacy callers don't break.)
+    """
+    _ = theme  # reserved for future visual treatments
     role_chip = (
         f'<span class="tx-badge muted" style="margin-right:6px;">{role_label}</span>'
         if role_label else ""
@@ -581,10 +588,6 @@ def top_bar_html(theme: str, role_label: str = "", primary_action: str = "") -> 
         '<div class="tx-brand">TEXICON<span class="tx-leaf"></span></div>'
         '<div class="tx-topright">'
         f'{role_chip}'
-        '<div class="tx-toggle">'
-        f'<a class="{sun_class}" href="?theme=light" target="_self">☀ Light</a>'
-        f'<a class="{moon_class}" href="?theme=dark" target="_self">☾ Dark</a>'
-        '</div>'
         f'{primary_action}'
         '</div>'
         '</div>'
@@ -620,19 +623,33 @@ def render_top_bar(active_page: str):
 
     `active_page` accepts either a label ('Revenue') or page_id ('1_Revenue_Sales').
     Nav uses st.page_link to preserve session state across navigation.
+    Theme toggle uses a hidden st.button overlaying the visual toggle — a
+    plain <a href="?theme=..."> would reload the page and drop session_state.
     """
     import streamlit as st
     try:
-        from components.theme import current_theme
+        from components.theme import current_theme, set_theme
         from components.auth import current_role
     except ModuleNotFoundError:
-        from dashboard.components.theme import current_theme
+        from dashboard.components.theme import current_theme, set_theme
         from dashboard.components.auth import current_role
     role = current_role() or "owner"
     role_label = "Owner" if role == "owner" else "Sales"
     theme = current_theme()
     st.markdown(top_bar_html(theme=theme, role_label=role_label),
                 unsafe_allow_html=True)
+    # Session-preserving theme toggle. Narrow column aligned right; CSS
+    # styles .tx-theme-btn to look like the visual toggle pill.
+    _, btn_col = st.columns([8, 1])
+    with btn_col:
+        other = "dark" if theme == "light" else "light"
+        label = "☾ Dark" if theme == "light" else "☀ Light"
+        st.markdown('<div class="tx-theme-btn-wrap">', unsafe_allow_html=True)
+        if st.button(label, key=f"theme_toggle_{active_page}",
+                     use_container_width=True):
+            set_theme(other)
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
     page_id = _label_to_page_id(active_page, role)
     render_nav(active_page=page_id, risk_count=0, role=role)
 

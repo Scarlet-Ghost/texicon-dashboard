@@ -2,18 +2,15 @@
 from dashboard.components import drawers
 
 
-def test_top_bar_html_includes_brand_and_toggle():
+def test_top_bar_html_includes_brand_and_role_only():
     html = drawers.top_bar_html(theme="light", role_label="Owner")
     assert "TEXICON" in html
     assert "tx-leaf" in html
-    assert "tx-toggle" in html
     assert "Owner" in html
-    assert "?theme=dark" in html  # toggle target
-
-
-def test_top_bar_html_dark_toggles_to_light():
-    html = drawers.top_bar_html(theme="dark", role_label="Sales")
-    assert "?theme=light" in html
+    # Theme toggle is rendered separately as an st.button by render_top_bar,
+    # so the topbar HTML should not emit the raw <a href="?theme="> toggle.
+    assert "?theme=" not in html
+    assert "tx-toggle" not in html
 
 
 def test_label_to_page_id_owner():

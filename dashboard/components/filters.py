@@ -71,20 +71,23 @@ def render_top_filters(sr_df, so_df=None, dr_df=None, page_key="main", expand_fi
         with f1:
             if "AREA GROUP" in sr_df.columns:
                 areas = sorted(sr_df["AREA GROUP"].dropna().unique().tolist())
-                sel = st.multiselect("Area Group", areas, default=areas, key=f"area_{page_key}")
-                filters["area_group"] = sel
+                sel = st.multiselect("Area Group", areas, default=[], key=f"area_{page_key}",
+                                     placeholder=f"All ({len(areas)})")
+                filters["area_group"] = sel if sel else areas
 
         with f2:
             if "PRODUCT CATEGORY" in sr_df.columns:
                 cats = sorted(sr_df["PRODUCT CATEGORY"].dropna().unique().tolist())
-                sel = st.multiselect("Product Category", cats, default=cats, key=f"pcat_{page_key}")
-                filters["product_category"] = sel
+                sel = st.multiselect("Product Category", cats, default=[], key=f"pcat_{page_key}",
+                                     placeholder=f"All ({len(cats)})")
+                filters["product_category"] = sel if sel else cats
 
         with f3:
             if "TERMS" in sr_df.columns:
                 terms = sorted(sr_df["TERMS"].dropna().unique().tolist())
-                sel = st.multiselect("Payment Terms", terms, default=terms, key=f"terms_{page_key}")
-                filters["terms"] = sel
+                sel = st.multiselect("Payment Terms", terms, default=[], key=f"terms_{page_key}",
+                                     placeholder=f"All ({len(terms)})")
+                filters["terms"] = sel if sel else terms
 
         with f4:
             wh_vals = set()
@@ -94,8 +97,9 @@ def render_top_filters(sr_df, so_df=None, dr_df=None, page_key="main", expand_fi
                 wh_vals.update(dr_df["Warehouse"].dropna().unique())
             if wh_vals:
                 wh_list = sorted(wh_vals)
-                sel = st.multiselect("Warehouse", wh_list, default=wh_list, key=f"wh_{page_key}")
-                filters["warehouse"] = sel
+                sel = st.multiselect("Warehouse", wh_list, default=[], key=f"wh_{page_key}",
+                                     placeholder=f"All ({len(wh_list)})")
+                filters["warehouse"] = sel if sel else wh_list
 
     # --- Active Filter Chips ---
     _render_active_chips(filters, sr_df, so_df, dr_df, page_key)
