@@ -120,6 +120,41 @@ New file:
 
 The single `assets/style.css` is replaced by a Python-generated CSS string (so theme tokens are reusable in inline component HTML).
 
+## Motion & Loading
+
+Apple-style motion language: subtle, purposeful, never showy. All animations honor `prefers-reduced-motion: reduce`.
+
+### Page transitions
+- Fade + 4px upward slide on page mount: `opacity: 0→1, translateY(4px→0)` over `220ms cubic-bezier(0.16, 1, 0.3, 1)` (Apple's "ease-out-expo")
+- Tab switch: active-tab pill animates position via CSS transform (`200ms` same easing); content fades in below
+
+### Loading screen
+- Full-screen overlay on initial app boot (while data loads): `#f5f5f7` bg with centered serif `TEXICON` wordmark + gold leaf, plus a 2px-tall progress bar beneath that fills `#2d8a3e` left-to-right indeterminate (CSS `@keyframes` 1.4s loop)
+- Per-page data loads (after auth): a 2px green progress bar pinned to the topbar bottom edge, indeterminate, auto-hides when `t1 = time.time()` finishes
+- Skeleton loaders for KPI cards and tables: 1px-border placeholder shapes with a `linear-gradient` shimmer animating `200%` left→right over `1.6s`
+
+### Hover & focus
+- Cards: lift `translateY(-1px)` + shadow `0 4px 12px rgba(0,0,0,0.04)` over `120ms`
+- Buttons: subtle bg darken (gold `#FFC907 → #f0bb00`, secondary `#fff → #fafafa`) over `100ms`
+- Inputs: focus ring `0 0 0 3px rgba(45,138,62,0.15)` (green at 15% alpha) over `100ms`
+- Tabs: hover bg fade-in `100ms`
+
+### Number animation
+- KPI values count up from 0 to final on mount (`450ms` ease-out, only on first render per session — not on filter change which would feel laggy)
+- Delta arrows pop in `150ms` after the number settles
+
+### Theme switch
+- Light↔dark transitions: all bg, border, text colors animate `200ms ease` simultaneously. No flash.
+
+### Modal / drawer
+- Drawer slides in from right `280ms cubic-bezier(0.32, 0.72, 0, 1)` (Apple's spring)
+- Backdrop fades `200ms`
+
+### What we don't do
+- No bouncing, no spinning logos, no parallax, no scroll-triggered reveals
+- No transitions over `300ms` except modals
+- No gradient sweeps or "shine" effects on buttons
+
 ## Out of Scope
 
 - No data model changes
@@ -136,6 +171,7 @@ The single `assets/style.css` is replaced by a Python-generated CSS string (so t
 4. Login screen matches the centered-card mockup.
 5. Owner and Sales roles still see the correct page subset.
 6. Lighthouse contrast check on light + dark modes: no AA violations on text or interactive elements.
+7. Page transitions, loading bar, hover lifts, KPI count-up, and theme-switch fade all work; nothing animates if `prefers-reduced-motion: reduce`.
 
 ## Open Questions
 
