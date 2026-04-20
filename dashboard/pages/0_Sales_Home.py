@@ -8,19 +8,18 @@ import pandas as pd
 import os
 from datetime import datetime
 
-st.set_page_config(
-    page_title="Texicon — Sales Home",
-    layout="wide",
-    initial_sidebar_state="collapsed",
-)
+st.set_page_config(page_title="Sales Home — Texicon", layout="wide",
+                   initial_sidebar_state="collapsed")
 
-css_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "style.css")
-with open(css_path) as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-st.markdown(
-    '<style>section[data-testid="stSidebar"]{display:none !important;}</style>',
-    unsafe_allow_html=True,
-)
+try:
+    from components.theme import inject_css, current_theme
+    from components.drawers import render_top_bar
+except ModuleNotFoundError:
+    from dashboard.components.theme import inject_css, current_theme
+    from dashboard.components.drawers import render_top_bar
+
+st.markdown(inject_css(current_theme()), unsafe_allow_html=True)
+render_top_bar(active_page="Sales Home")
 
 from components.auth import require_role, user_chip, current_role
 
@@ -48,14 +47,8 @@ sr = transform_sales_report(sr_raw)
 freshness_hours = get_data_freshness()
 
 now = datetime.now()
-top_bar(
-    data_date=now.strftime("%b %d, %Y"),
-    current_time=now.strftime("%I:%M %p"),
-    freshness_hours=freshness_hours,
-)
 user_chip()
 
-render_nav(active_page="0_Sales_Home", risk_count=0, role=current_role())
 render_breadcrumb([("Sales Home", None)])
 
 # --- Hero KPI: active customers this month ---
