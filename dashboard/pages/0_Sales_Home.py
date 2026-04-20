@@ -88,7 +88,7 @@ else:
     display["revenue"] = display["revenue"].apply(format_php)
     display["last_order_date"] = pd.to_datetime(display["last_order_date"]).dt.strftime("%b %d, %Y")
     display.columns = ["Customer", "Revenue", "Orders", "Last Order"]
-    styled_table(display)
+    styled_table(list(display.columns), display.values.tolist())
 
 # --- Top 10 items YTD ---
 section_header("Top 10 Items — Year to Date")
@@ -103,4 +103,4 @@ else:
         display.columns = ["Item", "Revenue", "Qty"]
     else:
         display.columns = ["Item", "Revenue"]
-    styled_table(display)
+    styled_table(list(display.columns), display.values.tolist())
