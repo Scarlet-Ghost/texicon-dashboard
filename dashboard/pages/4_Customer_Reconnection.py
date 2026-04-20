@@ -7,6 +7,10 @@ with open(css_path) as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 st.markdown('<style>section[data-testid="stSidebar"]{display:none !important;}</style>', unsafe_allow_html=True)
 
+from components.auth import require_role, user_chip, current_role
+
+require_role(allowed=["owner", "sales"])
+
 from data.loader import load_sales_report, load_sales_order, load_delivery_report, get_data_freshness
 from data.transformer import transform_sales_report, transform_sales_order, transform_delivery_report
 from data.tooltips import RECONNECT as TT
@@ -32,10 +36,24 @@ sr = transform_sales_report(sr_raw)
 so = transform_sales_order(so_raw)
 dr = transform_delivery_report(dr_raw)
 
-_risks = compute_global_risks(sr, so, dr)
-render_nav(active_page="4_Customer_Reconnection", risk_count=len(_risks))
-render_breadcrumb([("Executive", "app"), ("Customer Reconnection", None)])
-if _risks:
+_role = current_role()
+if _role == "owner":
+    _risks = compute_global_risks(sr, so, dr)
+else:
+    _risks = []
+
+render_nav(
+    active_page="4_Customer_Reconnection",
+    risk_count=len(_risks),
+    role=_role,
+)
+
+if _role == "sales":
+    render_breadcrumb([("Sales Home", "0_Sales_Home"), ("Customer Reconnection", None)])
+else:
+    render_breadcrumb([("Executive", "app"), ("Customer Reconnection", None)])
+
+if _risks and _role == "owner":
     global_alert_strip(_risks)
 filters = render_top_filters(sr, page_key="recon", expand_filters=False)
 sr_f = apply_filters_sr(sr, filters)
@@ -52,6 +70,7 @@ if cust_df.empty:
 
 data_end = sr_f["DATE"].max().strftime("%B %d, %Y") if pd.notna(sr_f["DATE"].max()) else "N/A"
 top_bar(data_end, datetime.now().strftime("%a, %b %d, %Y  %I:%M:%S %p"), freshness_hours=get_data_freshness())
+user_chip()
 
 st.markdown('<div class="page-title">Customer Reconnection</div>', unsafe_allow_html=True)
 st.markdown('<div class="page-subtitle">Identify inactive customers and prioritize re-engagement actions</div>', unsafe_allow_html=True)
