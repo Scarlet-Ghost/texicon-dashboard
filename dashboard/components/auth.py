@@ -57,13 +57,11 @@ def _check_password(entered, stored):
 
 
 def render_login():
-    """Render the login form and stop the script.
+    """Render the centered-card login. Must run when role is unset."""
+    from dashboard.components.theme import inject_css, current_theme
+    import streamlit as st
 
-    Must be called from app.py when role is unset. Uses st.form so
-    individual keystrokes do not trigger reruns.
-    """
-    st.markdown("## Texicon Dashboard")
-    st.markdown("Please log in.")
+    st.markdown(inject_css(current_theme()), unsafe_allow_html=True)
 
     if not _secrets_configured():
         st.error(
@@ -73,10 +71,29 @@ def render_login():
         )
         st.stop()
 
-    with st.form("login_form", clear_on_submit=False):
-        email = st.text_input("Email", placeholder="you@texicon.com")
-        password = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Log in")
+    st.markdown(
+        '<div class="tx-login-bg">'
+        '<div class="tx-login-panel">'
+        '<div class="tx-brand" style="justify-content:center;font-size:22px;margin-bottom:6px;">'
+        'TEXICON<span class="tx-leaf"></span></div>'
+        '<div style="font-size:12px;color:var(--text-muted);margin-bottom:20px;">'
+        'Sign in to continue</div>'
+        '</div></div>',
+        unsafe_allow_html=True,
+    )
+
+    # Form sits in a centered narrow column so it lines up with the panel.
+    _, mid, _ = st.columns([1, 2, 1])
+    with mid:
+        with st.form("login_form", clear_on_submit=False):
+            email = st.text_input("Email", placeholder="you@texicon.com",
+                                  label_visibility="collapsed")
+            password = st.text_input("Password", type="password",
+                                     placeholder="Password",
+                                     label_visibility="collapsed")
+            submitted = st.form_submit_button("Sign in",
+                                              use_container_width=True,
+                                              type="primary")
 
     if submitted:
         role_key = _role_for_email(email)
@@ -86,7 +103,8 @@ def render_login():
             st.session_state["authed_at"] = time.time()
             st.rerun()
         else:
-            st.error("Invalid email or password.")
+            with mid:
+                st.error("Invalid email or password.")
 
     st.stop()
 
