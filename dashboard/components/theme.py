@@ -290,3 +290,40 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
   }}
 }}
 </style>"""
+
+
+def normalize_mode(value) -> str:
+    """Coerce any value into 'light' or 'dark'. Default 'light'."""
+    if value in ("light", "dark"):
+        return value
+    return "light"
+
+
+def toggle_mode(mode: str) -> str:
+    return "dark" if normalize_mode(mode) == "light" else "light"
+
+
+def current_theme() -> str:
+    """Read current theme from Streamlit session_state, default 'light'.
+
+    Reads ?theme= query param on first call to support cross-page persistence.
+    Updates session_state from query param. Subsequent calls just read state.
+    """
+    import streamlit as st
+    if "theme" not in st.session_state:
+        try:
+            qp = st.query_params.get("theme")
+        except Exception:
+            qp = None
+        st.session_state["theme"] = normalize_mode(qp)
+    return st.session_state["theme"]
+
+
+def set_theme(mode: str) -> None:
+    import streamlit as st
+    mode = normalize_mode(mode)
+    st.session_state["theme"] = mode
+    try:
+        st.query_params["theme"] = mode
+    except Exception:
+        pass

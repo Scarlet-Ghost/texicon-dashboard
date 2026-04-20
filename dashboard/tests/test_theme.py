@@ -51,3 +51,22 @@ def test_inject_css_returns_str_starting_with_style_tag(mode):
     css = theme.inject_css(mode)
     assert css.startswith("<style>")
     assert css.endswith("</style>")
+
+
+import streamlit as st
+
+
+def test_normalize_mode_default_light():
+    assert theme.normalize_mode(None) == "light"
+    assert theme.normalize_mode("") == "light"
+    assert theme.normalize_mode("garbage") == "light"
+
+
+def test_normalize_mode_passthrough():
+    assert theme.normalize_mode("light") == "light"
+    assert theme.normalize_mode("dark") == "dark"
+
+
+def test_toggle_mode():
+    assert theme.toggle_mode("light") == "dark"
+    assert theme.toggle_mode("dark") == "light"
