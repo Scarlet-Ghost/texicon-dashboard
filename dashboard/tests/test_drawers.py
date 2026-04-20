@@ -16,19 +16,19 @@ def test_top_bar_html_dark_toggles_to_light():
     assert "?theme=light" in html
 
 
-def test_render_nav_html_marks_active():
-    html = drawers.render_nav_html(active="Revenue", role="owner")
-    assert 'class="tx-tab on"' in html
-    assert "Revenue" in html
-    assert "Sales Home" in html
+def test_label_to_page_id_owner():
+    # owner labels map to their page_id; session-preserving st.page_link uses these
+    assert drawers._label_to_page_id("Revenue", "owner") == "1_Revenue_Sales"
+    assert drawers._label_to_page_id("Executive", "owner") == "app"
+    assert drawers._label_to_page_id("Data", "owner") == "6_Data_Explorer"
 
 
-def test_render_nav_html_sales_subset():
-    html = drawers.render_nav_html(active="Sales Home", role="sales")
-    assert "Sales Home" in html
-    assert "Reconnect" in html
-    assert "Data" in html
-    assert "Cash" not in html  # owner-only page hidden for sales
+def test_label_to_page_id_sales_subset():
+    # sales role gets a 3-page nav; owner-only labels fall through unchanged
+    assert drawers._label_to_page_id("Reconnect", "sales") == "4_Customer_Reconnection"
+    assert drawers._label_to_page_id("Intel", "sales") == "5_Sales_Intelligence"
+    # "Cash" is owner-only; unknown-for-role labels return the label itself
+    assert drawers._label_to_page_id("Cash", "sales") == "Cash"
 
 
 def test_badge_html_variants():

@@ -40,17 +40,10 @@ def render_nav(active_page="app", risk_count=0, role=None):
     `risk_count` — accepted for signature compatibility; not rendered as a badge.
     """
     pages = _nav_pages_for_role(role)
-    with st.container(border=True):
-        cols = st.columns([1.4] + [1] * len(pages))
-
-        with cols[0]:
-            st.markdown(
-                '<div class="nav-brand-inline">Texicon</div>',
-                unsafe_allow_html=True,
-            )
-
+    with st.container(border=False):
+        cols = st.columns([1] * len(pages))
         for i, (label, page_id) in enumerate(pages):
-            with cols[i + 1]:
+            with cols[i]:
                 if page_id == active_page:
                     st.markdown(
                         f'<div class="nav-pill-active">{label}</div>',
@@ -485,7 +478,7 @@ def global_alert_strip(risks):
 
     html = (
         f'<div class="{strip_cls}">'
-        f'<span class="{count_cls}">{total}</span>'
+        f'<span class="{count_cls}">{total}</span> '
         f'Active alerts: {text} &mdash; check Executive Dashboard for details'
         f'</div>'
     )
@@ -569,21 +562,9 @@ def _sparkline_svg(values, width=70, height=22, color=None, stroke_width=1.5):
 
 
 # ===== New v9 redesign helpers =====
-
-_NAV_PAGES_OWNER = [
-    ("Sales Home", "/Sales_Home"),
-    ("Revenue", "/Revenue_Sales"),
-    ("Cash", "/Cash_Collections"),
-    ("Operations", "/Operations_Delivery"),
-    ("Reconnect", "/Customer_Reconnection"),
-    ("Intel", "/Sales_Intelligence"),
-    ("Data", "/Data_Explorer"),
-]
-_NAV_PAGES_SALES = [
-    ("Sales Home", "/Sales_Home"),
-    ("Reconnect", "/Customer_Reconnection"),
-    ("Data", "/Data_Explorer"),
-]
+# Note: nav page lists are defined at module top (_NAV_PAGES_OWNER/_NAV_PAGES_SALES)
+# using Streamlit page IDs — navigation goes through st.page_link to preserve
+# session state (raw <a> links drop the WebSocket session and log users out).
 
 
 def top_bar_html(theme: str, role_label: str = "", primary_action: str = "") -> str:
@@ -610,13 +591,13 @@ def top_bar_html(theme: str, role_label: str = "", primary_action: str = "") -> 
     )
 
 
-def render_nav_html(active: str, role: str = "owner") -> str:
+def _label_to_page_id(label: str, role: str) -> str:
+    """Map a human label ('Revenue') to a nav page_id ('1_Revenue_Sales')."""
     pages = _NAV_PAGES_SALES if role == "sales" else _NAV_PAGES_OWNER
-    items = []
-    for label, href in pages:
-        cls = "tx-tab on" if label == active else "tx-tab"
-        items.append(f'<a class="{cls}" href="{href}" target="_self">{label}</a>')
-    return '<div class="tx-tabs">' + "".join(items) + '</div>'
+    for l, pid in pages:
+        if l == label:
+            return pid
+    return label
 
 
 def badge_html(text: str, variant: str = "muted") -> str:
@@ -635,7 +616,11 @@ def breadcrumb_html(parts: list) -> str:
 
 
 def render_top_bar(active_page: str):
-    """Streamlit wrapper: read theme + role, emit topbar + nav. Call at top of every page."""
+    """Streamlit wrapper: read theme + role, emit topbar + nav. Call at top of every page.
+
+    `active_page` accepts either a label ('Revenue') or page_id ('1_Revenue_Sales').
+    Nav uses st.page_link to preserve session state across navigation.
+    """
     import streamlit as st
     try:
         from components.theme import current_theme
@@ -648,8 +633,8 @@ def render_top_bar(active_page: str):
     theme = current_theme()
     st.markdown(top_bar_html(theme=theme, role_label=role_label),
                 unsafe_allow_html=True)
-    st.markdown(render_nav_html(active=active_page, role=role),
-                unsafe_allow_html=True)
+    page_id = _label_to_page_id(active_page, role)
+    render_nav(active_page=page_id, risk_count=0, role=role)
 
 
 def kpi_card_html(label: str, value: str, delta: str = "",

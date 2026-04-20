@@ -79,7 +79,7 @@ try:
     from components.drawers import render_top_bar
 except ModuleNotFoundError:
     from dashboard.components.drawers import render_top_bar
-render_top_bar(active_page="Revenue")
+render_top_bar(active_page="Executive")
 
 # --- Top Filters (collapsed by default on Executive overview) ---
 filters = render_top_filters(sr, so, dr, page_key="main", expand_filters=False)
@@ -251,8 +251,9 @@ if booking_gap_pct > 15:
 # ============================================
 _gp_per_unit = total_net / total_qty if total_qty > 0 else 0
 render_kpi_row([
-    {"label": "TOTAL QTY SOLD", "value": f"{total_qty:,.0f} L/KG",
-     "sub_text": f"{sr_f['QTY IN CTN'].sum():,.0f} cartons" if "QTY IN CTN" in sr_f.columns else "",
+    {"label": "TOTAL QTY SOLD", "value": f"{total_qty:,.0f}",
+     "sub_text": (f"L/KG · {sr_f['QTY IN CTN'].sum():,.0f} cartons"
+                  if "QTY IN CTN" in sr_f.columns else "L/KG"),
      "tooltip": TT["total_qty"], "trend_data": kpi_trends.get("qty")},
     kpi_spec_money("GROSS SALES", total_gross, tooltip=TT["gross_sales"],
                    trend_data=kpi_trends.get("net_revenue")),

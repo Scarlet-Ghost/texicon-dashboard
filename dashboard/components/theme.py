@@ -172,6 +172,21 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 .tx-tab:hover {{ background: var(--bg-page); }}
 .tx-tab.on {{ background: var(--tab-active-bg); color: var(--tab-active-fg); font-weight: 500; }}
 
+/* ===== v9 page-link nav (st.page_link + .nav-pill-active) ===== */
+[data-testid="stPageLink"] a {{
+  font-size: 13px !important; color: var(--text-secondary) !important;
+  border-radius: 8px !important; padding: 6px 10px !important;
+  transition: background 100ms ease, color 100ms ease !important;
+}}
+[data-testid="stPageLink"] a:hover {{
+  background: var(--bg-surface) !important; color: var(--text-primary) !important;
+}}
+.nav-pill-active {{
+  display: inline-block; padding: 6px 12px; border-radius: 8px;
+  background: var(--brand-green); color: #fff; font-size: 13px;
+  font-weight: 500; text-align: center; letter-spacing: -0.005em;
+}}
+
 /* ===== Cards / KPIs ===== */
 .tx-card {{
   background: var(--bg-surface); border: 1px solid var(--border);
