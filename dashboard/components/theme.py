@@ -31,6 +31,8 @@ _LIGHT = {
     "btn_primary_bg": _BRAND_GOLD,
     "btn_primary_fg": "#000000",
     "btn_primary_hover": "#f0bb00",
+    "link_fg": "#0066cc",
+    "danger_border": "#fecaca",
     "_plotly_template": "plotly_white",
 }
 
@@ -54,6 +56,8 @@ _DARK = {
     "btn_primary_bg": _BRAND_GOLD,
     "btn_primary_fg": "#000000",
     "btn_primary_hover": "#f0bb00",
+    "link_fg": "#7fbfff",
+    "danger_border": "#7a1d1d",
     "_plotly_template": "plotly_dark",
 }
 
@@ -101,6 +105,8 @@ def inject_css(mode: Mode) -> str:
   --btn-primary-bg: {t['btn_primary_bg']};
   --btn-primary-fg: {t['btn_primary_fg']};
   --btn-primary-hover: {t['btn_primary_hover']};
+  --link-fg: {t['link_fg']};
+  --danger-border: {t['danger_border']};
   --font-ui: {_FONT_UI};
   --font-serif: {_FONT_SERIF};
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -116,7 +122,11 @@ html, body, [data-testid="stAppViewContainer"] {{
 }}
 section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ display: none !important; }}
 [data-testid="stToolbar"] {{ display: none !important; }}
-.block-container {{ padding-top: 0.75rem !important; max-width: 1200px !important; }}
+.block-container {{
+  padding-top: 0.75rem !important;
+  max-width: 1200px !important;
+  animation: tx-page-in 220ms var(--ease-out);
+}}
 
 /* ===== Topbar ===== */
 .tx-topbar {{
@@ -201,8 +211,8 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 .tx-btn-primary:hover {{ background: var(--btn-primary-hover); }}
 .tx-btn-secondary {{ background: var(--bg-surface); color: var(--text-primary); border-color: var(--border-input); }}
 .tx-btn-secondary:hover {{ background: var(--bg-subtle); }}
-.tx-btn-ghost {{ background: transparent; color: #0066cc; }}
-.tx-btn-danger {{ background: var(--bg-surface); color: var(--danger); border-color: #fecaca; }}
+.tx-btn-ghost {{ background: transparent; color: var(--link-fg); }}
+.tx-btn-danger {{ background: var(--bg-surface); color: var(--danger); border-color: var(--danger-border); }}
 .tx-btn-icon {{ padding: 7px; background: var(--bg-subtle); border-color: var(--border); }}
 
 /* ===== Streamlit native button override (so st.button matches secondary) ===== */
@@ -268,7 +278,6 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 @keyframes tx-shimmer {{ 0% {{ background-position: 200% 0; }} 100% {{ background-position: -200% 0; }} }}
 
 /* ===== Page transition ===== */
-.block-container {{ animation: tx-page-in 220ms var(--ease-out); }}
 @keyframes tx-page-in {{ from {{ opacity: 0; transform: translateY(4px); }} to {{ opacity: 1; transform: translateY(0); }} }}
 @keyframes tx-fade-in {{ from {{ opacity: 0; }} to {{ opacity: 1; }} }}
 
