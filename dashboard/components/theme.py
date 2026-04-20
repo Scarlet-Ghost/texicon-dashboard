@@ -243,6 +243,21 @@ section[data-testid="stSidebar"], header[data-testid="stHeader"], footer {{ disp
 .tx-breadcrumb {{ font-size: 11px; color: var(--text-muted); }}
 .tx-breadcrumb b {{ color: var(--text-primary); font-weight: 500; }}
 
+/* ===== Filter chips (active filter pills from filters.py) ===== */
+.filter-chips-row {{
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: 6px; margin-bottom: 6px;
+}}
+.filter-chip {{
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; background: rgba(45,138,62,0.10);
+  border: 1px solid var(--brand-green); border-radius: 99px;
+  font-size: 11px; color: var(--brand-green);
+  font-family: var(--font-ui); font-weight: 500;
+  white-space: nowrap; transition: background 100ms ease;
+}}
+.filter-chip:hover {{ background: rgba(45,138,62,0.18); }}
+
 /* ===== Login screen ===== */
 .tx-login-bg {{ background: var(--bg-page); padding: 60px 0; min-height: 70vh; display: flex; align-items: center; justify-content: center; }}
 .tx-login-panel {{
