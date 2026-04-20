@@ -535,3 +535,83 @@ def _sparkline_svg(values, width=70, height=22, color=None, stroke_width=1.5):
     return f"""<div class="kpi-sparkline"><svg width="{width}" height="{height}" viewBox="0 0 {width} {height}">
         <polyline points="{pts}" fill="none" stroke="{stroke}" stroke-width="{stroke_width}" stroke-linecap="round" stroke-linejoin="round"/>
     </svg></div>"""
+
+
+# ===== New v9 redesign helpers =====
+
+_NAV_PAGES_OWNER = [
+    ("Sales Home", "/Sales_Home"),
+    ("Revenue", "/Revenue_Sales"),
+    ("Cash", "/Cash_Collections"),
+    ("Operations", "/Operations_Delivery"),
+    ("Reconnect", "/Customer_Reconnection"),
+    ("Intel", "/Sales_Intelligence"),
+    ("Data", "/Data_Explorer"),
+]
+_NAV_PAGES_SALES = [
+    ("Sales Home", "/Sales_Home"),
+    ("Reconnect", "/Customer_Reconnection"),
+    ("Data", "/Data_Explorer"),
+]
+
+
+def top_bar_html(theme: str, role_label: str = "", primary_action: str = "") -> str:
+    """Topbar HTML: serif TEXICON wordmark, theme toggle, role chip, optional action."""
+    other = "dark" if theme == "light" else "light"
+    sun_class = "on" if theme == "light" else ""
+    moon_class = "on" if theme == "dark" else ""
+    role_chip = (
+        f'<span class="tx-badge muted" style="margin-right:6px;">{role_label}</span>'
+        if role_label else ""
+    )
+    return (
+        '<div class="tx-topbar">'
+        '<div class="tx-brand">TEXICON<span class="tx-leaf"></span></div>'
+        '<div class="tx-topright">'
+        f'{role_chip}'
+        '<div class="tx-toggle">'
+        f'<a class="{sun_class}" href="?theme=light" target="_self">☀ Light</a>'
+        f'<a class="{moon_class}" href="?theme=dark" target="_self">☾ Dark</a>'
+        '</div>'
+        f'{primary_action}'
+        '</div>'
+        '</div>'
+    )
+
+
+def render_nav_html(active: str, role: str = "owner") -> str:
+    pages = _NAV_PAGES_SALES if role == "sales" else _NAV_PAGES_OWNER
+    items = []
+    for label, href in pages:
+        cls = "tx-tab on" if label == active else "tx-tab"
+        items.append(f'<a class="{cls}" href="{href}" target="_self">{label}</a>')
+    return '<div class="tx-tabs">' + "".join(items) + '</div>'
+
+
+def badge_html(text: str, variant: str = "muted") -> str:
+    if variant not in ("gold", "green", "muted"):
+        variant = "muted"
+    return f'<span class="tx-badge {variant}">{text}</span>'
+
+
+def breadcrumb_html(parts: list) -> str:
+    if not parts:
+        return ""
+    head = f"<b>{parts[0]}</b>"
+    tail = " · ".join(parts[1:])
+    sep = " · " if tail else ""
+    return f'<div class="tx-breadcrumb">{head}{sep}{tail}</div>'
+
+
+def render_top_bar(active_page: str):
+    """Streamlit wrapper: read theme + role, emit topbar + nav. Call at top of every page."""
+    import streamlit as st
+    from dashboard.components.theme import current_theme
+    from dashboard.components.auth import current_role
+    role = current_role() or "owner"
+    role_label = "Owner" if role == "owner" else "Sales"
+    theme = current_theme()
+    st.markdown(top_bar_html(theme=theme, role_label=role_label),
+                unsafe_allow_html=True)
+    st.markdown(render_nav_html(active=active_page, role=role),
+                unsafe_allow_html=True)
