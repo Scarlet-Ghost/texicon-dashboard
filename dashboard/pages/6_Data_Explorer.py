@@ -10,6 +10,10 @@ with open(css_path) as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 st.markdown('<style>section[data-testid="stSidebar"]{display:none !important;}</style>', unsafe_allow_html=True)
 
+from components.auth import require_role, user_chip, current_role
+
+require_role(allowed=["owner"])
+
 from data.loader import load_sales_report, load_sales_order, load_delivery_report, load_collection_report, get_data_freshness
 from data.transformer import (
     transform_sales_report, transform_sales_order,
@@ -135,13 +139,14 @@ cr = transform_collection_report(cr_raw)
 # ============================================
 
 _risks = compute_global_risks(sr, so, dr)
-render_nav(active_page="6_Data_Explorer", risk_count=len(_risks))
+render_nav(active_page="6_Data_Explorer", risk_count=len(_risks), role=current_role())
 render_breadcrumb([("Executive", "app"), ("Data Explorer", None)])
 if _risks:
     global_alert_strip(_risks)
 
 data_end = sr["DATE"].max().strftime("%B %d, %Y") if ("DATE" in sr.columns and not sr.empty and pd.notna(sr["DATE"].max())) else "N/A"
 top_bar(data_end, datetime.now().strftime("%a, %b %d, %Y  %I:%M:%S %p"), freshness_hours=get_data_freshness())
+user_chip()
 
 st.markdown('<div class="page-title">Data Explorer</div>', unsafe_allow_html=True)
 st.markdown('<div class="page-subtitle">Browse, Filter & Export Raw Data</div>', unsafe_allow_html=True)

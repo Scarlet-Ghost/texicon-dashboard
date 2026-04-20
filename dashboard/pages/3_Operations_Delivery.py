@@ -7,6 +7,11 @@ from datetime import datetime
 css_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "style.css")
 with open(css_path) as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+st.markdown('<style>section[data-testid="stSidebar"]{display:none !important;}</style>', unsafe_allow_html=True)
+
+from components.auth import require_role, user_chip, current_role
+
+require_role(allowed=["owner"])
 
 from data.loader import load_sales_report, load_sales_order, load_delivery_report, get_data_freshness
 from data.transformer import transform_sales_report, transform_sales_order, transform_delivery_report
@@ -26,8 +31,6 @@ from components.charts import (
     stacked_bar, histogram_chart, funnel_chart)
 from components.formatting import format_php, format_pct, format_number, format_days
 
-st.markdown('<style>section[data-testid="stSidebar"]{display:none !important;}</style>', unsafe_allow_html=True)
-
 sr_raw = load_sales_report()
 so_raw = load_sales_order()
 dr_raw = load_delivery_report()
@@ -36,7 +39,7 @@ so = transform_sales_order(so_raw)
 dr = transform_delivery_report(dr_raw)
 
 _risks = compute_global_risks(sr, so, dr)
-render_nav(active_page="3_Operations_Delivery", risk_count=len(_risks))
+render_nav(active_page="3_Operations_Delivery", risk_count=len(_risks), role=current_role())
 render_breadcrumb([("Executive", "app"), ("Operations & Delivery", None)])
 
 if _risks:
@@ -49,6 +52,7 @@ dr_f = apply_filters_dr(dr, filters)
 
 data_end = dr_f["Delivery Date"].max().strftime("%B %d, %Y") if ("Delivery Date" in dr_f.columns and not dr_f.empty and pd.notna(dr_f["Delivery Date"].max())) else "N/A"
 top_bar(data_end, datetime.now().strftime("%a, %b %d, %Y  %I:%M:%S %p"), freshness_hours=get_data_freshness())
+user_chip()
 
 st.markdown('<div class="page-title">Operations & Delivery</div>', unsafe_allow_html=True)
 st.markdown('<div class="page-subtitle">Fulfillment, Warehouse Performance & Service Levels</div>', unsafe_allow_html=True)
