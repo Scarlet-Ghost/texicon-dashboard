@@ -25,7 +25,24 @@ def _get_secret(key):
 
 
 def _secrets_configured():
-    return bool(_get_secret("owner_password")) and bool(_get_secret("sales_password"))
+    return (
+        bool(_get_secret("owner_password"))
+        and bool(_get_secret("sales_password"))
+        and bool(_get_secret("owner_email"))
+        and bool(_get_secret("sales_email"))
+    )
+
+
+def _role_for_email(email):
+    """Map an email (case-insensitive, trimmed) to a role, or None."""
+    if not email:
+        return None
+    normalized = email.strip().lower()
+    if normalized == (_get_secret("owner_email") or "").strip().lower():
+        return _ROLE_OWNER
+    if normalized == (_get_secret("sales_email") or "").strip().lower():
+        return _ROLE_SALES
+    return None
 
 
 def current_role():
@@ -52,24 +69,24 @@ def render_login():
         st.error(
             "Authentication is not configured. "
             "Contact the administrator — `st.secrets['auth']` is missing "
-            "`owner_password` and/or `sales_password`."
+            "required email/password entries."
         )
         st.stop()
 
     with st.form("login_form", clear_on_submit=False):
-        role_choice = st.selectbox("Role", ["Owner", "Sales"])
+        email = st.text_input("Email", placeholder="you@texicon.com")
         password = st.text_input("Password", type="password")
         submitted = st.form_submit_button("Log in")
 
     if submitted:
-        role_key = _ROLE_OWNER if role_choice == "Owner" else _ROLE_SALES
-        stored = _get_secret(f"{role_key}_password")
-        if _check_password(password, stored):
+        role_key = _role_for_email(email)
+        stored = _get_secret(f"{role_key}_password") if role_key else None
+        if role_key and _check_password(password, stored):
             st.session_state["role"] = role_key
             st.session_state["authed_at"] = time.time()
             st.rerun()
         else:
-            st.error("Invalid password.")
+            st.error("Invalid email or password.")
 
     st.stop()
 
