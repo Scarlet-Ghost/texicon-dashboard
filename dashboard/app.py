@@ -18,6 +18,15 @@ st.markdown(
     '<style>section[data-testid="stSidebar"] { display: none !important; }</style>',
     unsafe_allow_html=True)
 
+from components.auth import render_login, current_role, user_chip, require_role
+
+# Login gate — must run before any data loads.
+if current_role() is None:
+    render_login()
+
+# Owner-only page (sales users reach Sales Home via the nav).
+require_role(allowed=["owner"])
+
 from data.loader import load_sales_report, load_sales_order, load_delivery_report, load_collection_report, get_data_freshness
 from data.transformer import (
     transform_sales_report, transform_sales_order,
@@ -59,7 +68,7 @@ cr = transform_collection_report(cr_raw)
 # --- Navigation ---
 # Compute risks early for nav badge
 _pre_risks = compute_global_risks(sr, so, dr)
-render_nav(active_page="app", risk_count=len(_pre_risks))
+render_nav(active_page="app", risk_count=len(_pre_risks), role=current_role())
 
 # --- Top Filters (collapsed by default on Executive overview) ---
 filters = render_top_filters(sr, so, dr, page_key="main", expand_filters=False)
@@ -74,6 +83,7 @@ kpi_trends = compute_monthly_kpi_trends(sr_f)
 if sr_f.empty:
     data_end = "N/A"
     top_bar(data_end, datetime.now().strftime("%a, %b %d, %Y  %I:%M:%S %p"))
+    user_chip()
     empty_state()
     st.stop()
 
@@ -82,6 +92,7 @@ data_end = sr_f["DATE"].max().strftime("%B %d, %Y") if ("DATE" in sr_f.columns a
 freshness_hours = get_data_freshness()
 top_bar(data_end, datetime.now().strftime("%a, %b %d, %Y  %I:%M:%S %p"),
         freshness_hours=freshness_hours)
+user_chip()
 
 # --- Page Title ---
 st.markdown('<div class="page-title">Executive Dashboard</div>', unsafe_allow_html=True)

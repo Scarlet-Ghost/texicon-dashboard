@@ -9,8 +9,8 @@ def _tt(tooltip):
     return ""
 
 
-# --- Page Navigation Mapping ---
-_NAV_PAGES = [
+# --- Page Navigation Mapping (role-aware) ---
+_NAV_PAGES_OWNER = [
     ("Executive", "app"),
     ("Revenue", "1_Revenue_Sales"),
     ("Cash", "2_Cash_Collections"),
@@ -20,15 +20,28 @@ _NAV_PAGES = [
     ("Data", "6_Data_Explorer"),
 ]
 
+_NAV_PAGES_SALES = [
+    ("Sales Home", "0_Sales_Home"),
+    ("Reconnect", "4_Customer_Reconnection"),
+    ("Intel", "5_Sales_Intelligence"),
+]
 
-def render_nav(active_page="app", risk_count=0):
-    """Render the modern top navigation bar using st.page_link for routing.
 
-    `risk_count` is accepted for signature compatibility but no longer shown
-    as a badge — the dedicated `global_alert_strip` below the nav already
-    communicates active warnings, and the brand label stays clean."""
+def _nav_pages_for_role(role):
+    if role == "sales":
+        return _NAV_PAGES_SALES
+    return _NAV_PAGES_OWNER
+
+
+def render_nav(active_page="app", risk_count=0, role=None):
+    """Render the top navigation bar, filtered by role.
+
+    `role` — "owner" | "sales" | None. If None, defaults to owner nav.
+    `risk_count` — accepted for signature compatibility; not rendered as a badge.
+    """
+    pages = _nav_pages_for_role(role)
     with st.container(border=True):
-        cols = st.columns([1.4] + [1] * len(_NAV_PAGES))
+        cols = st.columns([1.4] + [1] * len(pages))
 
         with cols[0]:
             st.markdown(
@@ -36,7 +49,7 @@ def render_nav(active_page="app", risk_count=0):
                 unsafe_allow_html=True,
             )
 
-        for i, (label, page_id) in enumerate(_NAV_PAGES):
+        for i, (label, page_id) in enumerate(pages):
             with cols[i + 1]:
                 if page_id == active_page:
                     st.markdown(

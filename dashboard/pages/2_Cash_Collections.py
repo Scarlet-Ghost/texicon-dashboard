@@ -9,6 +9,10 @@ with open(css_path) as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 st.markdown('<style>section[data-testid="stSidebar"]{display:none !important;}</style>', unsafe_allow_html=True)
 
+from components.auth import require_role, user_chip, current_role
+
+require_role(allowed=["owner"])
+
 from data.loader import load_sales_report, load_collection_report, get_data_freshness, load_sales_order, load_delivery_report
 from data.transformer import transform_sales_report, transform_collection_report, transform_sales_order, transform_delivery_report
 from data.tooltips import CASH as TT
@@ -56,7 +60,7 @@ so = transform_sales_order(so_raw)
 dr = transform_delivery_report(dr_raw)
 
 _risks = compute_global_risks(sr, so, dr)
-render_nav(active_page="2_Cash_Collections", risk_count=len(_risks))
+render_nav(active_page="2_Cash_Collections", risk_count=len(_risks), role=current_role())
 render_breadcrumb([("Executive", "app"), ("Cash Flow & Collections", None)])
 if _risks:
     global_alert_strip(_risks)
@@ -65,6 +69,7 @@ sr_f = apply_filters_sr(sr, filters)
 
 data_end = sr_f["DATE"].max().strftime("%B %d, %Y") if ("DATE" in sr_f.columns and not sr_f.empty and pd.notna(sr_f["DATE"].max())) else "N/A"
 top_bar(data_end, datetime.now().strftime("%a, %b %d, %Y  %I:%M:%S %p"), freshness_hours=get_data_freshness())
+user_chip()
 
 st.markdown('<div class="page-title">Cash Flow & Collections</div>', unsafe_allow_html=True)
 st.markdown('<div class="page-subtitle">Accounts Receivable, DSO Analysis & Payment Terms Compliance</div>', unsafe_allow_html=True)
