@@ -1,47 +1,70 @@
 import streamlit as st
-from components.drawers import kpi_card, _tt
-from components.formatting import format_php, format_pct, format_number
+try:
+    from components.formatting import format_php, format_pct, format_number
+except ModuleNotFoundError:
+    from dashboard.components.formatting import format_php, format_pct, format_number
 
 
-def render_kpi_row(kpis, columns=None):
+def render_kpi_row(specs, columns=None):
     """Render a row of KPI cards from a list of spec dicts.
 
     Each spec supports:
-        label, value, delta, delta_label, value_class, sub_text, icon,
-        icon_class, tooltip, card_class, trend_data, computable, na_reason
+        label, value, delta, delta_dir, numeric_target, prefix, suffix, variant
+        (new redesign keys)
 
-    A spec with `computable=False` renders an na_card() in place of the value.
+    Legacy keys (value_class, sub_text, tooltip, card_class, trend_data,
+    computable, na_reason, lower_is_better) are tolerated and ignored — they
+    were consumed by the old kpi_card() helper which is no longer called here.
+
+    A spec with `computable=False` renders an na_card() in place of the KPI.
     """
-    n = columns or len(kpis)
-    cols = st.columns(n)
-    for i, kpi in enumerate(kpis):
-        with cols[i % n]:
-            if kpi.get("computable") is False:
-                na_card(
-                    label=kpi["label"],
-                    reason=kpi.get("na_reason", "Data unavailable"),
-                    tooltip=kpi.get("tooltip"),
-                )
-            else:
-                kpi_card(
-                    label=kpi["label"],
-                    value=kpi["value"],
-                    delta=kpi.get("delta"),
-                    delta_label=kpi.get("delta_label"),
-                    value_class=kpi.get("value_class", ""),
-                    sub_text=kpi.get("sub_text"),
-                    icon=kpi.get("icon"),
-                    icon_class=kpi.get("icon_class", ""),
-                    tooltip=kpi.get("tooltip"),
-                    card_class=kpi.get("card_class", ""),
-                    trend_data=kpi.get("trend_data"),
-                    lower_is_better=kpi.get("lower_is_better", False),
-                )
+    import streamlit as st
+    from dashboard.components.drawers import kpi_card_html, kpi_row_html
+    from dashboard.components.motion import count_up_runtime_script
+
+    def _to_kwargs(spec):
+        """Map spec keys to kpi_card_html kwargs.
+
+        Legacy spec helpers (kpi_spec_money, kpi_spec_pct, kpi_spec_count) emit:
+          label, value, value_class, sub_text, tooltip, trend_data, card_class,
+          lower_is_better
+        None of these collide with the new keys (delta, delta_dir,
+        numeric_target, prefix, suffix, variant), so we simply pass through
+        whatever matches the allowed set and drop the rest.
+        """
+        if not isinstance(spec, dict):
+            return {"label": "", "value": str(spec)}
+        allowed = {"label", "value", "delta", "delta_dir",
+                   "numeric_target", "prefix", "suffix", "variant"}
+        return {k: v for k, v in spec.items() if k in allowed}
+
+    cards = []
+    for s in specs:
+        if isinstance(s, dict) and s.get("computable") is False:
+            # Render na_card inline as a tx-card for layout consistency
+            label = s.get("label", "")
+            reason = s.get("na_reason", "Data unavailable")
+            cards.append(
+                f'<div class="tx-card tx-kpi">'
+                f'<div class="lbl">{label}</div>'
+                f'<div class="val"><span class="tx-kpi-val">N/A</span></div>'
+                f'<div class="delta">{reason}</div>'
+                f'</div>'
+            )
+        else:
+            cards.append(kpi_card_html(**_to_kwargs(s)))
+
+    st.markdown(kpi_row_html(cards), unsafe_allow_html=True)
+    st.markdown(count_up_runtime_script(), unsafe_allow_html=True)
 
 
 def na_card(label, reason, tooltip=None):
     """Render a KPI card whose value cannot be computed honestly. Replaces any
     pattern of fabricating placeholder numbers."""
+    try:
+        from components.drawers import _tt
+    except ModuleNotFoundError:
+        from dashboard.components.drawers import _tt
     html = (
         f'<div class="kpi-card kpi-card-na"{_tt(tooltip)}>'
         f'<div class="kpi-label">{label}</div>'

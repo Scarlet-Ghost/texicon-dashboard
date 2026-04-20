@@ -615,3 +615,41 @@ def render_top_bar(active_page: str):
                 unsafe_allow_html=True)
     st.markdown(render_nav_html(active=active_page, role=role),
                 unsafe_allow_html=True)
+
+
+def kpi_card_html(label: str, value: str, delta: str = "",
+                  delta_dir: str = "neutral", numeric_target: float = None,
+                  prefix: str = "", suffix: str = "",
+                  variant: str = "default") -> str:
+    """Render a single KPI card.
+
+    variant: 'default' | 'hero' | 'warn' (controls left stripe + bg tint)
+    delta_dir: 'up' | 'down' | 'neutral'
+    numeric_target: if provided, animate count-up; otherwise render value as-is.
+    """
+    from dashboard.components.motion import count_up_value
+    cls_extra = " hero" if variant == "hero" else (" warn" if variant == "warn" else "")
+    if numeric_target is not None:
+        val_html = count_up_value(label, value, numeric_target, prefix, suffix)
+    else:
+        val_html = f'<span class="tx-kpi-val">{value}</span>'
+    delta_class = delta_dir if delta_dir in ("up", "down") else ""
+    delta_html = f'<div class="delta {delta_class}">{delta}</div>' if delta else ""
+    return (
+        f'<div class="tx-card tx-kpi{cls_extra}">'
+        f'<div class="lbl">{label}</div>'
+        f'<div class="val">{val_html}</div>'
+        f'{delta_html}'
+        '</div>'
+    )
+
+
+def kpi_row_html(cards: list) -> str:
+    """Render a horizontal grid of kpi_card_html strings."""
+    n = len(cards) or 1
+    return (
+        f'<div style="display:grid;grid-template-columns:repeat({n},1fr);'
+        f'gap:8px;margin-bottom:12px;">'
+        + "".join(cards)
+        + '</div>'
+    )
