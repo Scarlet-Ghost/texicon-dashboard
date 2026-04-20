@@ -181,15 +181,19 @@ def mini_card(label, value, icon=None, tooltip=None):
 
 
 def compare_card(label, current, previous, delta_text, delta_up=True, tooltip=None):
-    """Render a comparison card: current -> previous with delta."""
+    """Render using the same visual grammar as kpi_card (eyebrow, big value,
+    muted sub-line, colored delta). Previously diverged with an arrow + prev
+    layout, which made adjacent rows look inconsistent — now one card style
+    across the whole dashboard."""
     cls = "up" if delta_up else "down"
+    delta_html = f'<div class="kpi-delta {cls}">{delta_text}</div>' if delta_text else ""
+    sub_html = f'<div class="kpi-delta muted">{previous}</div>' if previous else ""
     html = (
-        f'<div class="compare-card"{_tt(tooltip)}>'
-        f'<div class="compare-label">{label}</div>'
-        f'<span class="compare-main">{current}</span>'
-        f'<span class="compare-arrow">&rarr;</span>'
-        f'<span class="compare-prev">{previous}</span>'
-        f'<span class="compare-delta {cls}">{delta_text}</span>'
+        f'<div class="kpi-card"{_tt(tooltip)}>'
+        f'<div class="kpi-label">{label}</div>'
+        f'<div class="kpi-value">{current}</div>'
+        f'{delta_html}'
+        f'{sub_html}'
         f'</div>'
     )
     st.markdown(html, unsafe_allow_html=True)

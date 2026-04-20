@@ -308,13 +308,13 @@ with chart_col1:
             rev_tab1, rev_tab2 = st.tabs(["Revenue", "Volume"])
             with rev_tab1:
                 fig = line_bar_combo(monthly, "Month", "Net", "Gross", "Net Sales", "Gross Sales",
-                                     y_title="Revenue (PHP)")
+                                     height=440, y_title="Revenue (PHP)")
                 st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
             with rev_tab2:
                 if "YEAR_MONTH" in sr_f.columns and "QTY IN L/KG" in sr_f.columns:
                     vol_monthly = sr_f.groupby("YEAR_MONTH")["QTY IN L/KG"].sum().sort_index().reset_index()
                     vol_monthly["Month"] = vol_monthly["YEAR_MONTH"].dt.strftime("%b %y")
-                    fig = bar_chart(vol_monthly, "Month", "QTY IN L/KG", height=300,
+                    fig = bar_chart(vol_monthly, "Month", "QTY IN L/KG", height=440,
                                     y_title="Volume (L/KG)", y_currency=False)
                     fig.update_traces(hovertemplate="<b>%{x}</b><br>%{y:,.0f} L/KG<extra></extra>")
                     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
@@ -327,6 +327,7 @@ with chart_col2:
             cat_data = sr_f.groupby("PRODUCT CATEGORY")["NET SALES"].sum().sort_values(ascending=False)
             fig = donut_chart(
                 cat_data.index.tolist(), cat_data.values.tolist(),
+                height=440,
                 center_text=f"{len(cat_data)}\ncategories")
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 

@@ -164,7 +164,7 @@ with col1:
                 Count=("Delivered Amount", "count"), Value=("Delivered Amount", "sum")).sort_index().reset_index()
             dm["Month"] = dm["DEL_MONTH"].dt.strftime("%b %y")
             fig = line_bar_combo(dm, "Month", "Value", "Count", "Delivered Value", "Deliveries",
-                                 height=280, y_title="Delivered Value (PHP)",
+                                 height=420, y_title="Delivered Value (PHP)",
                                  line_on_secondary=True, line_currency=False,
                                  line_y_title="Deliveries (count)")
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
@@ -175,7 +175,7 @@ with col2:
         if "Warehouse" in dr_f.columns:
             wh = dr_f.groupby("Warehouse")["Delivered Amount"].sum().sort_values(ascending=False)
             wh_labels = [WAREHOUSE_LABELS.get(k, k) for k in wh.index]
-            fig = donut_chart(wh_labels, wh.values.tolist(), height=280,
+            fig = donut_chart(wh_labels, wh.values.tolist(), height=420,
                               center_text=f"{len(wh)}\nWH")
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 

@@ -93,10 +93,11 @@ def horizontal_bar(df, x, y, color_seq=None, height=None, x_title=None, y_title=
             df[y] = df[y].map(lambda v: label_map.get(v, v))
     colors = color_seq or [CHART_COLORS[0]]
     if height is None and dynamic_height:
+        # Capped tighter so side-by-side rows stay visually balanced.
         n = len(df)
-        height = max(240, min(520, 38 * n + 60))
+        height = max(320, min(420, 30 * n + 80))
     elif height is None:
-        height = 320
+        height = 360
 
     fig = px.bar(df, x=x, y=y, orientation="h", color_discrete_sequence=colors)
     fig.update_layout(**_layout(height=height))
@@ -116,7 +117,7 @@ def horizontal_bar(df, x, y, color_seq=None, height=None, x_title=None, y_title=
     return apply_theme(fig)
 
 
-def donut_chart(labels, values, colors=None, height=320, center_text=None,
+def donut_chart(labels, values, colors=None, height=420, center_text=None,
                 label_map=None, value_is_currency=True, unit_label=""):
     """Donut chart.
 
@@ -136,7 +137,7 @@ def donut_chart(labels, values, colors=None, height=320, center_text=None,
         hover = "<b>%{label}</b><br>%{value:,.0f}" + suffix + "<br>%{percent}<extra></extra>"
 
     fig = go.Figure(go.Pie(
-        labels=labels, values=values, hole=0.65,
+        labels=labels, values=values, hole=0.62,
         marker=dict(colors=colors or CHART_COLORS, line=dict(color=BG_CARD, width=2)),
         textinfo="percent",
         textposition=text_positions,
@@ -146,33 +147,37 @@ def donut_chart(labels, values, colors=None, height=320, center_text=None,
         pull=[0.015] * n,
         sort=False,
     ))
-    # Tighten the pie domain so the donut itself occupies a wide, central band
-    # of the card regardless of legend placement.
-    fig.update_traces(domain=dict(x=[0.15, 0.85], y=[0.1, 0.95]))
+
+    # Layout: legend at the bottom, donut gets the top ~70% so it stays large.
+    # For many-category charts, grow the chart slightly so the wrapped legend
+    # doesn't eat into the donut area.
+    if n >= 5:
+        donut_domain_y = [0.32, 0.98]
+        legend_y = 0.22
+        height = max(height, 440)
+    else:
+        donut_domain_y = [0.22, 0.98]
+        legend_y = 0.12
+
+    fig.update_traces(domain=dict(x=[0.05, 0.95], y=donut_domain_y))
 
     if center_text:
-        fig.add_annotation(text=f"<b>{center_text}</b>", x=0.5, y=0.5,
-                           font=dict(size=20, color="#6B7280", family="Inter"),
-                           showarrow=False, xref="paper", yref="paper")
+        # Replace any newline with <br> (plotly annotations use HTML).
+        safe_text = str(center_text).replace("\n", "<br>")
+        # Anchor annotation to the donut-domain centre, not the paper centre.
+        cx = 0.5
+        cy = (donut_domain_y[0] + donut_domain_y[1]) / 2
+        fig.add_annotation(text=f"<b>{safe_text}</b>", x=cx, y=cy,
+                           font=dict(size=16, color="#6B7280", family="Inter"),
+                           showarrow=False, xref="paper", yref="paper",
+                           align="center")
 
-    # Legend placement: stay below the donut regardless of count so the donut
-    # keeps the full card width. For many categories, grow the chart so the
-    # wrapped legend has room.
-    if n >= 5:
-        # Many categories: legend below, wrap horizontally so donut stays wide
-        legend = dict(orientation="h", yanchor="top", y=-0.05,
-                      xanchor="center", x=0.5,
-                      font=dict(size=11, color=TEXT_SECONDARY),
-                      itemwidth=60)
-        # Grow chart so both donut and wrapped legend fit
-        height = max(height, 380)
-    else:
-        legend = dict(orientation="h", yanchor="bottom", y=-0.15,
-                      xanchor="center", x=0.5,
-                      font=dict(size=11, color=TEXT_SECONDARY))
+    legend = dict(orientation="h", yanchor="top", y=legend_y,
+                  xanchor="center", x=0.5,
+                  font=dict(size=11, color=TEXT_SECONDARY))
 
     fig.update_layout(**_layout(height=height, showlegend=True, legend=legend,
-                                margin=dict(l=10, r=10, t=20, b=20)))
+                                margin=dict(l=10, r=10, t=10, b=10)))
     return apply_theme(fig)
 
 

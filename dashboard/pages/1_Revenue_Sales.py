@@ -191,7 +191,7 @@ with col1:
         section_card_header("Sales Representatives", "Revenue by sales rep", tooltip=TT["sales_reps"])
         if "SR" in sr_f.columns:
             top10_r = sr_f.groupby("SR")["NET SALES"].sum().nlargest(10).sort_values(ascending=True).reset_index()
-            fig = horizontal_bar(top10_r, "NET SALES", "SR", x_title="Revenue (PHP)")
+            fig = horizontal_bar(top10_r, "NET SALES", "SR", x_title="Revenue (PHP)", height=420, dynamic_height=False)
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
 with col2:
@@ -201,7 +201,7 @@ with col2:
             tm_data = sr_f.groupby(["AREA GROUP", "CLUSTER"])["NET SALES"].sum().reset_index()
             tm_data = tm_data[tm_data["NET SALES"] > 0]
             if not tm_data.empty:
-                fig = treemap_chart(tm_data, path=["AREA GROUP", "CLUSTER"], values="NET SALES", height=300)
+                fig = treemap_chart(tm_data, path=["AREA GROUP", "CLUSTER"], values="NET SALES", height=420)
                 st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
 # === PAYMENT TERMS ===
@@ -221,7 +221,7 @@ with col2:
         section_card_header("Terms by Area", "Payment terms across regions", tooltip=TT["terms_by_area"])
         if "TERMS" in sr_f.columns and "AREA GROUP" in sr_f.columns:
             ta = sr_f.groupby(["AREA GROUP", "TERMS"])["NET SALES"].sum().reset_index()
-            fig = stacked_bar(ta, "AREA GROUP", "NET SALES", "TERMS", height=300,
+            fig = stacked_bar(ta, "AREA GROUP", "NET SALES", "TERMS", height=420,
                               y_title="Revenue (PHP)", x_title="Area")
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
