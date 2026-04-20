@@ -19,8 +19,12 @@ def render_kpi_row(specs, columns=None):
     A spec with `computable=False` renders an na_card() in place of the KPI.
     """
     import streamlit as st
-    from dashboard.components.drawers import kpi_card_html, kpi_row_html
-    from dashboard.components.motion import count_up_runtime_script
+    try:
+        from components.drawers import kpi_card_html, kpi_row_html
+        from components.motion import count_up_runtime_script
+    except ModuleNotFoundError:
+        from dashboard.components.drawers import kpi_card_html, kpi_row_html
+        from dashboard.components.motion import count_up_runtime_script
 
     def _to_kwargs(spec):
         """Map spec keys to kpi_card_html kwargs.
