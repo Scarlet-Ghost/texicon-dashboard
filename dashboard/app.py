@@ -24,7 +24,11 @@ from components.auth import render_login, current_role, user_chip, require_role
 if current_role() is None:
     render_login()
 
-# Owner-only page (sales users reach Sales Home via the nav).
+# Sales users land on Sales Home, not the exec dashboard.
+if current_role() == "sales":
+    st.switch_page("pages/0_Sales_Home.py")
+
+# Owner-only below this point.
 require_role(allowed=["owner"])
 
 from data.loader import load_sales_report, load_sales_order, load_delivery_report, load_collection_report, get_data_freshness
